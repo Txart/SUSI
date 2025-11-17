@@ -131,7 +131,7 @@ for stand, weather_input, outname, sitetype, hum in zip(
 ):
     # ***************** local call for SUSI*****************************************************
 
-    folderName = str(CONFIG.paths.output_folder) + "/shallow"
+    folderName = str(CONFIG.paths.output_folder) + "/shallow/"
 
     mottifile = {
         "path": str(CONFIG.paths.input_folder) + "/",  # Input file folder
