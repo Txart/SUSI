@@ -1,25 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep 30 14:10:42 2020
+Created on 17 Nov 2025
 
-@author: alauren
+@author: alauren, txart
 """
 
-# THIS files
 import numpy as np
 import datetime
 from susi.core.susi_utils import read_FMI_weather
 from susi.io.susi_para import get_susi_para
 from susi.core.susi_main import Susi
+from susi.config import CONFIG
 
 # ***************** local call for SUSI*****************************************************
-folderName = r"../outputs/"  # location where outputs are saved
-
-wpath = r"../inputs/"  # Folder where the weather files are located
-wdata = "CFw.csv"  # Weather file name
 
 mottifile = {
-    "path": r"../inputs/",  # Input file folder
+    "path": str(CONFIG.paths.input_folder) + "/",  # Input file folder
     "dominant": {1: "CF_41.xlsx"},  # Motti-file for the dominant layer
     "subdominant": {
         0: "susi_motti_input_lyr_1.xlsx"
@@ -52,13 +48,13 @@ sfc = np.ones(n, dtype=int) * site_fertility_class  # site fertility class
 site = "develop_scens"  # name of the parameter set in get_susi_para
 
 forc = read_FMI_weather(
-    0, start_date, end_date, sourcefile=wpath + wdata
+    0, start_date, end_date, sourcefile=CONFIG.paths.weather_data_path
 )  # read weather input
 
 wpara, cpara, org_para, spara, outpara, photopara = get_susi_para(
     wlocation="undefined",
     peat=site,
-    folderName=folderName,
+    folderName=str(CONFIG.paths.output_folder) + "/",
     hdomSim=None,
     ageSim=ageSim,
     sarkaSim=sarkaSim,
@@ -124,7 +120,7 @@ susi.run_susi(
     mottifile=mottifile,
     peat="other",
     photosite="All data",
-    folderName=folderName,
+    folderName=str(CONFIG.paths.output_folder) + "/",
     ageSim=ageSim,
     sarkaSim=sarkaSim,
     sfc=sfc,
