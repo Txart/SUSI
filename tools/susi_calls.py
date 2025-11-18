@@ -10,10 +10,24 @@ import datetime
 from susi.core.susi_utils import read_FMI_weather
 from susi.io.susi_para import get_susi_para
 from susi.core.susi_main import Susi
-from susi.config import CONFIG
+from susi.config import Config, FilePaths, SimulationParameters
 
 # ***************** local call for SUSI*****************************************************
 
+CONFIG = Config(
+    paths=FilePaths(),
+    simulation_parameters=SimulationParameters(
+        start_date=datetime.datetime(2004, 1, 1),
+        end_date=datetime.datetime(2005, 12, 31),
+        strip_width_metres=40.0,
+        initial_dominant_stand_age_years=100.0,
+        initial_subdominant_stand_age_years=0.0,
+        initial_understorey_age_years=0.0,
+        site_fertility_class=4,
+    ),
+)
+
+# mottifile, dict of dicts, telling the growth and yield (Motti files) in each canopy layer with key pointing to integer in the canopylayer dict
 mottifile = {
     "path": str(CONFIG.paths.input_folder) + "/",  # Input file folder
     "dominant": {1: "CF_41.xlsx"},  # Motti-file for the dominant layer
@@ -24,31 +38,13 @@ mottifile = {
 }  # understorey layer Mottifile, 0 if not in use
 
 
-start_date = datetime.datetime(2004, 1, 1)  # Start date for simulation
-end_date = datetime.datetime(2005, 12, 31)  # End day for simulation
-start_yr = start_date.year
-end_yr = end_date.year
-yrs = (end_date - start_date).days / 365.25
-
-sarkaSim = 40.0  # Strip width, ie distance between ditches, m
-n = int(sarkaSim / 2)  # Number of computation nodes in the strip, 2-m width of node
-
-ageSim = {
-    "dominant": 100.0
-    * np.ones(
-        n
-    ),  # age of the stand in the beginning of the simulation, yrs, given for all nodes along the strip
-    "subdominant": 0 * np.ones(n),  # same for subdominant layer
-    "under": 0 * np.ones(n),
-}  # same for understorey layer
-
-site_fertility_class = 4
-sfc = np.ones(n, dtype=int) * site_fertility_class  # site fertility class
-
 site = "develop_scens"  # name of the parameter set in get_susi_para
 
 forc = read_FMI_weather(
-    0, start_date, end_date, sourcefile=CONFIG.paths.weather_data_path
+    0,
+    CONFIG.simulation_parameters.start_date,
+    CONFIG.simulation_parameters.end_date,
+    sourcefile=CONFIG.paths.weather_data_path,
 )  # read weather input
 
 wpara, cpara, org_para, spara, outpara, photopara = get_susi_para(
@@ -56,10 +52,10 @@ wpara, cpara, org_para, spara, outpara, photopara = get_susi_para(
     peat=site,
     folderName=str(CONFIG.paths.output_folder) + "/",
     hdomSim=None,
-    ageSim=ageSim,
-    sarkaSim=sarkaSim,
-    sfc=sfc,
-    n=n,
+    ageSim=CONFIG.simulation_parameters.ageSim,
+    sarkaSim=CONFIG.simulation_parameters.strip_width_metres,
+    sfc=CONFIG.simulation_parameters.sfc,
+    n=CONFIG.simulation_parameters.n_computation_nodes_in_strip,
 )
 
 spara["cutting_yr"] = (
@@ -70,7 +66,7 @@ mass_mor = (
     1.616 * np.log(spara["drain_age"]) - 1.409
 )  # Pitkänen et al. 2012 Forest Ecology and Management 284 (2012) 100–106
 
-if np.median(sfc) > 4:
+if np.median(CONFIG.simulation_parameters.sfc) > 4:
     spara["peat type"] = [
         "S",
         "S",
@@ -114,14 +110,14 @@ susi.run_susi(
     spara,
     outpara,
     photopara,
-    start_yr,
-    end_yr,
+    start_yr=CONFIG.simulation_parameters.start_date.year,
+    end_yr=CONFIG.simulation_parameters.end_date.year,
     wlocation="undefined",
     mottifile=mottifile,
     peat="other",
     photosite="All data",
     folderName=str(CONFIG.paths.output_folder) + "/",
-    ageSim=ageSim,
-    sarkaSim=sarkaSim,
-    sfc=sfc,
+    ageSim=CONFIG.simulation_parameters.ageSim,
+    sarkaSim=CONFIG.simulation_parameters.strip_width_metres,
+    sfc=CONFIG.simulation_parameters.sfc,
 )  # Run susi

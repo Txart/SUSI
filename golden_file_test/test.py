@@ -15,7 +15,7 @@ import subprocess
 import netCDF4
 import numpy as np
 
-from susi.config import CONFIG
+from susi.config import FilePaths
 from susi.io.utils import get_project_root
 
 
@@ -50,9 +50,11 @@ def hash_netcdf_file(file_path, variables=None):
 
 project_root_path = get_project_root()
 
+default_file_paths = FilePaths()
+
 CURRENT_SUSI_CALLS_PATH = project_root_path / Path("tools/susi_calls.py")
 GOLDEN_NETCDF_FILE_PATH = project_root_path / Path("golden_file_test/golden_susi.nc")
-NEW_SUSI_NETCDF_FILE_PATH = CONFIG.paths.output_folder / Path("susi.nc")
+NEW_SUSI_NETCDF_FILE_PATH = default_file_paths.output_folder / Path("susi.nc")
 
 print("Computing golden hash...")
 golden_hash = hash_netcdf_file(file_path=GOLDEN_NETCDF_FILE_PATH)
