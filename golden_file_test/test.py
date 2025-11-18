@@ -12,36 +12,61 @@
 from pathlib import Path
 import hashlib
 import subprocess
+import netCDF4
+import numpy as np
 
 from susi.config import CONFIG
 from susi.io.utils import get_project_root
 
 
-def sha256_file(path):
+def hash_netcdf_file(file_path, variables=None):
+    """
+    Compute SHA-256 hash of numerical data in a NetCDF4 file.
+
+    Args:
+        file_path (str): path to NetCDF4 file
+        variables (list or None): list of variable names to include.
+                                  If None, all variables are included.
+
+    Returns:
+        str: hex digest of SHA-256 hash
+    """
+    ds = netCDF4.Dataset(file_path, "r")
+
+    if variables is None:
+        variables = list(ds.variables.keys())
+
     h = hashlib.sha256()
-    with open(path, "rb") as f:
-        for chunk in iter(lambda: f.read(1 << 16), b""):
-            h.update(chunk)
+
+    for var in variables:
+        data = ds.variables[var][:]
+        # Ensure data is contiguous and in consistent byte order
+        data_bytes = np.ascontiguousarray(data).tobytes()
+        h.update(data_bytes)
+
+    ds.close()
     return h.hexdigest()
 
 
 project_root_path = get_project_root()
 
-CURRENT_SUSI_CALLS_PATH = project_root_path / Path("simulations/susi_calls.py")
+CURRENT_SUSI_CALLS_PATH = project_root_path / Path("tools/susi_calls.py")
 GOLDEN_NETCDF_FILE_PATH = project_root_path / Path("golden_file_test/golden_susi.nc")
 NEW_SUSI_NETCDF_FILE_PATH = CONFIG.paths.output_folder / Path("susi.nc")
 
 print("Computing golden hash...")
-golden_hash = sha256_file(GOLDEN_NETCDF_FILE_PATH)
+golden_hash = hash_netcdf_file(file_path=GOLDEN_NETCDF_FILE_PATH)
+print(f"Golden hash = {golden_hash}")
 
-print("Executing susi_calls.py and saving the outputs to golden_file_test/susi.nc...")
+print("Executing susi_calls.py...")
 subprocess.run(
     ["python", str(CURRENT_SUSI_CALLS_PATH)],
     check=True,
 )
 
 print("Computing susi.nc hash...")
-current_hash = sha256_file(GOLDEN_NETCDF_FILE_PATH)
+current_hash = hash_netcdf_file(file_path=NEW_SUSI_NETCDF_FILE_PATH)
+print(f"Current hash = {current_hash}")
 
 test_passes = golden_hash == current_hash
 
