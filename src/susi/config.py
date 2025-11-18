@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+import susi.io.utils as io_utils
+
 
 @dataclass
 class FilePaths:
@@ -20,10 +22,12 @@ class Config:
     paths: FilePaths
 
 
+project_root_path = io_utils.get_project_root()
+
 CONFIG = Config(
     FilePaths(
-        input_folder=Path("inputs/"),
-        output_folder=Path("outputs/"),
-        weather_data_path=Path("inputs/CFw.csv"),
+        input_folder=project_root_path / Path("inputs/"),
+        output_folder=project_root_path / Path("outputs/"),
+        weather_data_path=project_root_path / Path("inputs/CFw.csv"),
     )
 )
