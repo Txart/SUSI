@@ -76,8 +76,8 @@ class Susi:
         nscens = len(spara["ditch depth east"])  # number of scenarios
         n = spara["n"]  # number of columns along the strip
 
-        outname = (
-            outpara["outfolder"] + outpara["netcdf"]
+        outname = str(
+            outpara.outfolder / outpara.netcdf
         )  # name and path for the netcdf4 file for output
 
         out = Outputs(

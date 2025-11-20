@@ -158,6 +158,15 @@ class CanopyParameters(BaseModel):
     state: CanopyStateParameters = CanopyStateParameters()
 
 
+class OutputParameters(StrictFrozenModel):
+    outfolder: DirectoryPath = project_root_path / Path("outputs/")
+    netcdf: Path = Path("susi.nc")
+    startday: int = 1
+    startmonth: int = 7  # Päivä josta keskiarvojen laskenta alkaa
+    endday: int = 31
+    endmonth: int = 8  # Päivä johon keskiarvojen laskenta loppuu
+
+
 class SimulationParameters(
     StrictFrozenModel,
     arbitrary_types_allowed=True,  # This allows numpy arrays and other types which do not have built-in validation in Pydantic
@@ -528,18 +537,7 @@ def get_susi_para(
         },
     }
     # ------------  Output parameters -------------------------------------------------
-    outpara = {
-        "outfolder": folderName,
-        "netcdf": "susi.nc",
-        #'netcdf': 'susi_ba18.nc',
-        #'netcdf': 'susi_strip.nc',
-        #'netcdf': 'susi_cc.nc',
-        "startday": 1,
-        "startmonth": 7,  # Päivä, josta keskiarvojen laskenta alkaa
-        "endday": 31,
-        "endmonth": 8,  # Päivä, johon keskiarvojen laskenta loppuu
-        #'figs': True, 'to_file':True, 'static stand':False, 'hydfig':True, 'DOCfig':False,
-    }
+    outpara = OutputParameters()
     photopara = {
         "All data": {
             "beta": 0.513,
