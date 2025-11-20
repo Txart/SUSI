@@ -21,10 +21,11 @@ from susi.core.stand import Stand
 from susi.core.methane import Methane
 from susi.core.fertilization import Fertilization
 from susi.core.outputs import Outputs
-
 from susi.core.susi_io import print_site_description
 from susi.core.susi_utils import rew_drylimit
 from susi.core.susi_utils import get_temp_sum, heterotrophic_respiration_yr, ojanen_2019
+
+from susi.config import OrganicLayerParametersArray, CanopyStateParametersArray
 
 
 class Susi:
@@ -65,7 +66,7 @@ class Susi:
 
         switches = {"Ojanen2010_2019": True}
 
-        dtc = cpara["dt"]  # canopy model timestep
+        dtc = cpara.dt  # canopy model timestep
 
         start_date = datetime.datetime(start_yr, 1, 1)  # simulation start date
         end_date = datetime.datetime(end_yr, 12, 31)  # simulation end date
@@ -169,18 +170,19 @@ class Susi:
         cmask = np.ones(
             spara["n"]
         )  # compute canopy and moss for each soil column (0, and n-1 are ditches)
-        cstate = cpara["state"].copy()
-        for key in cstate.keys():
-            cstate[key] *= cmask
+        canopy_state_parameters_array = CanopyStateParametersArray(
+            canopy_state_parameters=cpara.state, array_length=spara["n"]
+        )
         cpy = CanopyGrid(
-            cpara, cstate, outputs=False
+            cpara=cpara, state=canopy_state_parameters_array, outputs=False
         )  # initialize above ground vegetation hydrology model
-        cpy.update_amax(cpara["physpara"], stand.nut_stat)
+        cpy.update_amax(cpara.physpara, stand.nut_stat)
         out.initialize_cpy()
 
-        for key in org_para.keys():
-            org_para[key] *= cmask
-        moss = MossLayer(org_para, outputs=True)
+        org_para_array = OrganicLayerParametersArray(
+            organic_layer_parameters=org_para, array_length=spara["n"]
+        )
+        moss = MossLayer(org_para_array=org_para_array, outputs=True)
         print("Canopy and moss layer hydrology initialized")
 
         # ******** Soil and strip parameterization *************************
@@ -292,7 +294,7 @@ class Susi:
                 ).days + 1
 
                 # CHECK THIS AND TEST
-                cpy.update_amax(cpara["physpara"], stand.nut_stat)
+                cpy.update_amax(cpara.physpara, stand.nut_stat)
 
                 # **********  Daily loop ************************************************************
                 for dd in range(days):  # day loop

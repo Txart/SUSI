@@ -8,7 +8,7 @@ Created on 17 Nov 2025
 import numpy as np
 import datetime
 from susi.core.susi_utils import read_FMI_weather
-from susi.io.susi_para import get_susi_para
+from susi.config import get_susi_para
 from susi.core.susi_main import Susi
 from susi.config import Config, FilePaths, SimulationParameters
 
@@ -40,12 +40,6 @@ mottifile = {
 
 site = "develop_scens"  # name of the parameter set in get_susi_para
 
-forc = read_FMI_weather(
-    0,
-    CONFIG.simulation_parameters.start_date,
-    CONFIG.simulation_parameters.end_date,
-    sourcefile=CONFIG.paths.weather_data_path,
-)  # read weather input
 
 wpara, cpara, org_para, spara, outpara, photopara = get_susi_para(
     wlocation="undefined",
@@ -101,6 +95,13 @@ spara["scenario name"] = [
 # spara['enable_peatbottom'] = False
 
 susi = Susi()  # Initaiate susi class
+
+forc = read_FMI_weather(
+    0,
+    CONFIG.simulation_parameters.start_date,
+    CONFIG.simulation_parameters.end_date,
+    sourcefile=CONFIG.paths.weather_data_path,
+)  # read weather input
 
 susi.run_susi(
     forc,
