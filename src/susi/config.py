@@ -1,7 +1,7 @@
 from pathlib import Path
 import datetime
 import numpy as np
-from typing import Annotated
+from typing import Annotated, Callable
 from enum import Enum
 from pydantic import (
     BaseModel,
@@ -10,6 +10,7 @@ from pydantic import (
     computed_field,
     Field,
     ConfigDict,
+    field_validator,
 )
 
 import susi.io.utils as io_utils
@@ -19,6 +20,7 @@ project_root_path = io_utils.get_project_root()
 
 PositiveFloat = Annotated[float, Field(gt=0)]
 NonNegativeFloat = Annotated[float, Field(ge=0)]
+NonPositiveFloat = Annotated[float, Field(le=0)]
 
 
 class StrictFrozenModel(BaseModel):
@@ -259,6 +261,35 @@ def get_photo_parameters_by_location(
     return PRESET_PHOTO_PARAMETERS[location.value]
 
 
+class TreeSpecies(str, Enum):
+    pine = "Pine"
+    spruce = "Spruce"
+    birch = "Birch"
+
+
+class PeatTypes(str, Enum):
+    all_types = "A"
+    sphagnum = "S"
+    carex = "C"
+    wood = "L"
+
+
+class NutrientFertilizationParameters(StrictFrozenModel):
+    dose: NonNegativeFloat = Field(
+        description="Dose of compound in fertilizer, kg ha-1"
+    )
+    decay_k: NonNegativeFloat = Field(description="Decay rate, yr-1")
+    eff: NonNegativeFloat = Field(description="Nutrient use efficiency")
+
+
+class FertilizationParameters(StrictFrozenModel):
+    application_year: int = 2201
+    N: NutrientFertilizationParameters
+    P: NutrientFertilizationParameters
+    K: NutrientFertilizationParameters
+    pH_increment: NonNegativeFloat = 1.0
+
+
 class SimulationParameters(
     StrictFrozenModel,
     arbitrary_types_allowed=True,  # This allows numpy arrays and other types which do not have built-in validation in Pydantic
@@ -267,48 +298,127 @@ class SimulationParameters(
     start_date: datetime.datetime  # Start date for simulation
     end_date: datetime.datetime  # End day for simulation
 
-    # Hydro
-    strip_width_metres: float  # Distance between ditches
-
     # Forest
     # Age of different forest layers at the beginning of the simulation
     initial_dominant_stand_age_years: float
     initial_subdominant_stand_age_years: float
     initial_understorey_age_years: float
+
     site_fertility_class: int
+    sitename: str
+    species: TreeSpecies
+    sfc_specification: float
+    hdom: float | None
+    vol: float | None
+    smc: str
+    nLyrs: int
+    dzLyr: float
+    L: float = Field(description="Strip width, i.e., distance between ditches, m")
+    ditch_depth_west: list[NonPositiveFloat] = Field(
+        description="nLyrs kerrosten lkm, dzLyr kerroksen paksuus m, saran levys m, n laskentasolmulen lukumäärä, ditch depth pjan syvyys simuloinnin alussa m"
+    )
+    ditch_depth_east: list[NonPositiveFloat]
+    ditch_depth_20y_west: list[NonPositiveFloat] = Field(
+        description=" ojan syvyys 20 vuotta simuloinnin aloituksesta"
+    )
+    ditch_depth_20y_east: list[NonPositiveFloat] = Field(
+        description="ojan syvyys 20 vuotta simuloinnin aloituksesta"
+    )
+    scenario_name: list[str] = Field(description=" kasvunlisaykset")
+    drain_age: float
+    initial_h: float
+    slope: float
+    peat_type: list[str]
+    peat_type_bottom: list[str]
+    anisotropy: float = Field(description="Anisotropy of peat hydraulic conductivity")
+    vonP: bool = Field(description="degree of decomposition, vonPost scale, int")
+    vonP_top: list[int]
+    vonP_bottom: int
+    bd_top: float | None
+    bd_bottom: float
+    peatN: float | None
+    peatP: float | None
+    peatK: float | None
+    enable_peattop: bool
+    enable_peatmiddle: bool
+    enable_peatbottom: bool
+    rho_mor: float = Field(description="bulk density of mor layer, kg m-3")
+    h_mor: NonNegativeFloat | Callable[..., float] = Field(
+        description="depth of mor layer, m"
+    )
+    cutting_yr: int = Field(description=" year for cutting")
+    cutting_to_ba: float = Field(description="basal area after cutting, m2/ha")
+    depoN: float
+    depoP: float
+    depoK: float
+    fertilization: FertilizationParameters
 
     @computed_field
     @property
-    def n_computation_nodes_in_strip(self) -> int:
+    def n(self) -> int:
         # Number of computation nodes in the strip, 2-m width of node
-        return int(self.strip_width_metres / 2)
+        return int(self.L / 2)
 
     @computed_field
     @property
-    def ageSim(self) -> dict[str, np.ndarray]:
+    def age(self) -> dict[str, np.ndarray]:
         # Age of stand for all nodes along the strip
         return {
-            "dominant": self.initial_dominant_stand_age_years
-            * np.ones(self.n_computation_nodes_in_strip),
-            "subdominant": self.initial_subdominant_stand_age_years
-            * np.ones(self.n_computation_nodes_in_strip),
-            "under": self.initial_understorey_age_years
-            * np.ones(self.n_computation_nodes_in_strip),
+            "dominant": self.initial_dominant_stand_age_years * np.ones(self.n),
+            "subdominant": self.initial_subdominant_stand_age_years * np.ones(self.n),
+            "under": self.initial_understorey_age_years * np.ones(self.n),
         }
 
     @computed_field
     @property
     def sfc(self) -> np.ndarray:
         # site fertility class for all nodes along the strip
-        return (
-            np.ones(self.n_computation_nodes_in_strip, dtype=int)
-            * self.site_fertility_class
-        )
+        return np.ones(self.n, dtype=int) * self.site_fertility_class
+
+    @computed_field
+    @property
+    def canopylayers(self) -> dict[str, np.ndarray]:
+        return {
+            "dominant": np.ones(self.n, dtype=int),
+            "subdominant": np.zeros(self.n, dtype=int),
+            "under": np.zeros(self.n, dtype=int),
+        }
+
+    @field_validator("h_mor", mode="before")
+    @classmethod
+    def compute_if_callable(cls, hmor, info):
+        if callable(hmor):
+            drain_age = info.data.get("drain_age")
+            rho_mor = info.data.get("rho_mor")
+            if drain_age is None:
+                raise ValueError("`drain_age` must be provided to compute hmor")
+            if rho_mor is None:
+                raise ValueError("`rho_mor` must be provided to compute hmor")
+            try:
+                return hmor(drain_age, rho_mor)
+            except Exception as e:
+                raise ValueError(f"Failed to compute h_mor: {e}")
+        return hmor
 
 
-class Config(StrictFrozenModel):
+class Params(StrictFrozenModel):
     paths: FilePaths
     simulation_parameters: SimulationParameters
+    canopy_parameters: CanopyParameters
+    organic_layer_parameters: OrganicLayerParameters
+    photo_parameters: PhotoParameters
+    output_parameters: OutputParameters
+
+
+def mass_mor_from_drainage_Pitkanen(drain_age: float) -> float:
+    # Pitkänen et al. 2012 Forest Ecology and Management 284 (2012) 100–106
+    return 1.616 * np.log(drain_age) - 1.409
+
+
+def h_mor_from_drainage_and_mass_mor_Pitkanen(
+    drain_age: float, rho_mor: float
+) -> float:
+    return mass_mor_from_drainage_Pitkanen(drain_age) / rho_mor
 
 
 def get_susi_para(
@@ -334,304 +444,7 @@ def get_susi_para(
     # --------------Weather variables 10 km x 10 km grid
     if susiPath is None:
         susiPath = ""
-    wpara = {
-        "undefined": {
-            "infolder": susiPath + "\\wfiles\\",
-            "infile_d": "Tammela_weather_1.csv",
-            "start_yr": 1980,
-            "end_yr": 1984,
-            "description": "Undefined, Finland",
-            "lat": 65.00,
-            "lon": 25.00,
-        },
-    }
 
-    cpara = CanopyParameters()
-    org_para = OrganicLayerParameters()
-
-    # Hannun parametrit
-    # ------------ Soil and stand parameters ----------------------------------
-    spara = {
-        "develop_scens": {
-            "sitename": "susirun",
-            "species": "Pine",
-            "sfc": sfc,
-            "sfc_specification": 1,
-            "hdom": hdomSim,
-            "vol": volSim,
-            "age": ageSim,
-            "smc": "Peatland",
-            "nLyrs": 60,
-            "dzLyr": 0.05,
-            "L": sarkaSim,
-            "n": n,
-            "ditch depth west": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # nLyrs kerrosten lkm, dzLyr kerroksen paksuus m, saran levys m, n laskentasolmulen lukumäärä, ditch depth pjan syvyys simuloinnin alussa m
-            "ditch depth east": [-0.3, -0.6, -0.9],
-            "ditch depth 20y west": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "ditch depth 20y east": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "scenario name": ["D30", "D60", "D90"],  # kasvunlisaykset
-            "drain_age": 50,
-            "initial h": -0.2,
-            "slope": 0.0,
-            "peat type": ["A", "A", "A", "A", "A", "A", "A", "A"],
-            "peat type bottom": ["A"],
-            "anisotropy": 10.0,
-            "vonP": True,
-            "vonP top": [2, 2, 2, 3, 4, 5, 6, 6],
-            "vonP bottom": 8,
-            "bd top": None,
-            "bd bottom": 0.16,
-            "peatN": peatN,
-            "peatP": peatP,
-            "peatK": peatK,
-            "enable_peattop": True,
-            "enable_peatmiddle": True,
-            "enable_peatbottom": True,
-            "h_mor": 0.03,  # depth of mor layer, m
-            "rho_mor": 80.0,  # bulk density of mor layer, kg m-3
-            "cutting_yr": 2058,  # year for cutting
-            "cutting_to_ba": 12,  # basal area after cutting, m2/ha
-            "depoN": 4.0,
-            "depoP": 0.1,
-            "depoK": 1.0,
-            "fertilization": {
-                "application year": 2201,
-                "N": {
-                    "dose": 0.0,
-                    "decay_k": 0.5,
-                    "eff": 1.0,
-                },  # fertilization dose in kg ha-1, decay_k in yr-1
-                "P": {"dose": 45.0, "decay_k": 0.2, "eff": 1.0},
-                "K": {"dose": 100.0, "decay_k": 0.3, "eff": 1.0},
-                "pH_increment": 1.0,
-            },
-            "canopylayers": {
-                "dominant": np.ones((int(n)), dtype=int),
-                "subdominant": np.zeros((int(n)), dtype=int),
-                "under": np.zeros((int(n)), dtype=int),
-            },
-        },
-        "wbal_scens": {
-            "sitename": "susirun",
-            "species": "Pine",
-            "sfc": sfc,
-            "sfc_specification": 1,
-            "hdom": hdomSim,
-            "vol": volSim,
-            "age": ageSim,
-            "smc": "Peatland",
-            "nLyrs": 50,
-            "dzLyr": 0.05,
-            "L": sarkaSim,
-            "n": n,
-            "ditch depth west": [
-                -0.5
-            ],  # nLyrs kerrosten lkm, dzLyr kerroksen paksuus m, saran levys m, n laskentasolmulen lukumäärä, ditch depth pjan syvyys simuloinnin alussa m
-            "ditch depth east": [-0.5],
-            "ditch depth 20y west": [
-                -0.5
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "ditch depth 20y east": [
-                -0.5
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "scenario name": ["Wbalance"],  # kasvunlisaykset
-            "initial h": -0.2,
-            "slope": 0.0,
-            "peat type": ["A", "A", "A", "A", "A", "A", "A", "A"],
-            "peat type bottom": ["A"],
-            "anisotropy": 10.0,
-            "vonP": True,
-            "vonP top": [2, 2, 2, 3, 4, 5, 6, 6],
-            "vonP bottom": 8,
-            "bd top": [0.12, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12, 0.12],
-            "bd bottom": 0.16,
-            "peatN": peatN,
-            "peatP": peatP,
-            "peatK": peatK,
-            "enable_peattop": True,
-            "enable_peatmiddle": True,
-            "enable_peatbottom": True,
-            "h_mor": 0.01,  # depth of mor layer, m
-            "rho_mor": 80.0,  # bulk density of mor layer, kg m-3
-            "cutting_yr": 2058,  # year for cutting
-            "cutting_to_ba": 12,  # basal area after cutting, m2/ha
-            "depoN": 4.0,
-            "depoP": 0.1,
-            "depoK": 1.0,
-            "fertilization": {
-                "application year": 2201,
-                "N": {
-                    "dose": 0.0,
-                    "decay_k": 0.5,
-                    "eff": 1.0,
-                },  # fertilization dose in kg ha-1, decay_k in yr-1
-                "P": {"dose": 45.0, "decay_k": 0.075, "eff": 1.0},
-                "K": {"dose": 100.0, "decay_k": 0.075, "eff": 1.0},
-                "pH_increment": 1.0,
-            },
-            "canopylayers": {
-                "dominant": np.ones((int(n)), dtype=int),
-                "subdominant": np.zeros((int(n)), dtype=int),
-                "under": np.zeros((int(n)), dtype=int),
-            },
-        },
-        "krycklan": {
-            "sitename": "susirun",
-            "species": "Spruce",
-            "sfc": sfc,
-            "sfc_specification": 1,
-            "hdom": hdomSim,
-            "vol": volSim,
-            "age": ageSim,
-            "smc": "Peatland",
-            "nLyrs": 30,
-            "dzLyr": 0.05,
-            "L": sarkaSim,
-            "n": n,
-            "ditch depth west": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # nLyrs kerrosten lkm, dzLyr kerroksen paksuus m, saran levys m, n laskentasolmulen lukumäärä, ditch depth pjan syvyys simuloinnin alussa m
-            "ditch depth east": [-0.3, -0, 6, -0.9],
-            "ditch depth 20y west": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "ditch depth 20y east": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "scenario name": ["D30", "D60", "D90"],  # kasvunlisaykset
-            "initial h": -0.2,
-            "slope": 3.0,
-            "peat type": ["A", "A", "A", "A", "A", "A", "A", "A"],
-            "peat type bottom": ["A"],
-            "anisotropy": 50.0,
-            "vonP": False,
-            "vonP top": [2, 2, 2, 2, 4, 5, 5, 5],
-            "vonP bottom": 5,
-            "bd top": None,
-            "bd bottom": 0.16,
-            "peatN": 1.2,
-            "peatP": 0.12,
-            "peatK": 0.07,  # peat nutrient contents in gravimetric %
-            "enable_peattop": True,
-            "enable_peatmiddle": False,
-            "enable_peatbottom": False,
-            "h_mor": 0.04,  # depth of mor layer, m
-            "rho_mor": 100.0,  # bulk density of mor layer, kg m-3
-            "cutting_yr": 2058,  # year for cutting
-            "cutting_to_ba": 12,  # basal area after cutting, m2/ha
-            "depoN": 4.0,
-            "depoP": 0.1,
-            "depoK": 1.0,
-            "fertilization": {
-                "application year": 2201,
-                "N": {
-                    "dose": 0.0,
-                    "decay_k": 0.5,
-                    "eff": 1.0,
-                },  # fertilization dose in kg ha-1, decay_k in yr-1
-                "P": {"dose": 45.0, "decay_k": 0.2, "eff": 1.0},
-                "K": {"dose": 100.0, "decay_k": 0.3, "eff": 1.0},
-                "pH_increment": 1.0,
-            },
-            "canopylayers": {
-                "dominant": np.ones((int(n)), dtype=int),
-                "subdominant": np.zeros((int(n)), dtype=int),
-                "under": np.zeros((int(n)), dtype=int),
-            },
-        },
-        "ullika": {
-            "sitename": "susirun",
-            "species": "Pile",
-            "sfc": sfc,
-            "sfc_specification": 1,
-            "hdom": hdomSim,
-            "vol": volSim,
-            "age": ageSim,
-            "smc": "Peatland",
-            "nLyrs": 30,
-            "dzLyr": 0.05,
-            "L": sarkaSim,
-            "n": n,
-            "ditch depth west": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # nLyrs kerrosten lkm, dzLyr kerroksen paksuus m, saran levys m, n laskentasolmulen lukumäärä, ditch depth pjan syvyys simuloinnin alussa m
-            "ditch depth east": [-0.1, -0.3, -0.9],
-            "ditch depth 20y west": [
-                -0.3,
-                -0.6,
-                -0.9,
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "ditch depth 20y east": [
-                -0.1,
-                -0.3,
-                -0.9,
-            ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
-            "scenario name": ["D30", "D60", "D90"],  # kasvunlisaykset
-            "initial h": -0.2,
-            "slope": 0.5,
-            "peat type": ["A", "A", "A", "A", "A", "S", "S", "S"],
-            "peat type bottom": ["S"],
-            "anisotropy": 10.0,
-            "vonP": False,
-            "vonP top": [2, 2, 2, 2, 4, 5, 5, 5],
-            "vonP bottom": 7,
-            "bd top": None,
-            "bd bottom": 0.16,
-            "peatN": 0.86,
-            "peatP": 0.007,
-            "peatK": 0.026,  # peat nutrient contents in gravimetric %
-            "enable_peattop": True,
-            "enable_peatmiddle": True,
-            "enable_peatbottom": True,
-            "h_mor": 0.04,  # depth of mor layer, m
-            "rho_mor": 100.0,  # bulk density of mor layer, kg m-3
-            "cutting_yr": 2058,  # year for cutting
-            "cutting_to_ba": 12,  # basal area after cutting, m2/ha
-            "depoN": 4.0,
-            "depoP": 0.1,
-            "depoK": 1.0,
-            "fertilization": {
-                "application year": 2201,
-                "N": {
-                    "dose": 0.0,
-                    "decay_k": 0.5,
-                    "eff": 1.0,
-                },  # fertilization dose in kg ha-1, decay_k in yr-1
-                "P": {"dose": 45.0, "decay_k": 0.2, "eff": 1.0},
-                "K": {"dose": 100.0, "decay_k": 0.3, "eff": 1.0},
-                "pH_increment": 1.0,
-            },
-            "canopylayers": {
-                "dominant": np.ones((int(n)), dtype=int),
-                "subdominant": np.zeros((int(n)), dtype=int),
-                "under": np.zeros((int(n)), dtype=int),
-            },
-        },
-    }
-    # ------------  Output parameters -------------------------------------------------
-    outpara = OutputParameters()
-
-    photopara = get_photo_parameters_by_location(location=photosite)
     # ----------- Arrange and make coherent------
     # cpara['lat']=wpara[wlocation]['lat']; cpara['lon']=wpara[wlocation]['lon']
 
