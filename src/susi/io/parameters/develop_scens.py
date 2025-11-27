@@ -1,5 +1,5 @@
 import datetime
-from susi.config import (
+from susi.io.parameter_model import (
     Params,
     MetaData,
     SimulationParameters,

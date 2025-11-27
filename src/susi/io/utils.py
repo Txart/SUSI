@@ -23,6 +23,14 @@ def random_id_generator(size) -> str:
     return "".join(random.choice(characters) for _ in range(size))
 
 
-def generate_experiment_ID() -> str:
-    datetime_stamp = generate_current_datetime_stamp()
+def generate_experiment_ID(datetime_stamp: str) -> str:
     return datetime_stamp + "_" + random_id_generator(size=8)
+
+
+def create_folder(path: Path) -> None:
+    try:
+        path.mkdir(parents=False, exist_ok=False)
+    except FileExistsError:
+        raise FileExistsError(
+            f"A folder with the same path, i.e., {path}, already exists."
+        )

@@ -15,7 +15,7 @@ import subprocess
 import netCDF4
 import numpy as np
 
-from susi.config import MetaData
+from susi.io.metadata_model import MetaData
 from susi.io.utils import get_project_root
 
 

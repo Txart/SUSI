@@ -25,7 +25,10 @@ from susi.core.susi_io import print_site_description
 from susi.core.susi_utils import rew_drylimit
 from susi.core.susi_utils import get_temp_sum, heterotrophic_respiration_yr, ojanen_2019
 
-from susi.config import OrganicLayerParametersArray, CanopyStateParametersArray
+from susi.io.parameter_model import (
+    OrganicLayerParametersArray,
+    CanopyStateParametersArray,
+)
 
 
 class Susi:

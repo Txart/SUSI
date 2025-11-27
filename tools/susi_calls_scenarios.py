@@ -10,7 +10,7 @@ import datetime
 from susi.core.susi_utils import read_FMI_weather
 from susi.io.susi_para import get_susi_para
 from susi.core.susi_main import Susi
-from susi.config import CONFIG
+from susi.io.parameters.develop_scens import Params
 
 stands = [
     "SF_22.xlsx",
@@ -131,10 +131,10 @@ for stand, weather_input, outname, sitetype, hum in zip(
 ):
     # ***************** local call for SUSI*****************************************************
 
-    folderName = str(CONFIG.paths.output_folder) + "/shallow/"
+    folderName = str(Params.paths.output_folder) + "/shallow/"
 
     mottifile = {
-        "path": str(CONFIG.paths.input_folder) + "/",  # Input file folder
+        "path": str(Params.paths.input_folder) + "/",  # Input file folder
         "dominant": {1: stand},
         "subdominant": {0: "susi_motti_input_lyr_1.xlsx"},
         "under": {0: "susi_motti_input_lyr_2.xlsx"},
@@ -169,7 +169,7 @@ for stand, weather_input, outname, sitetype, hum in zip(
         0,
         start_date,
         end_date,
-        sourcefile=str(CONFIG.paths.input_folder) + "/" + weather_input,
+        sourcefile=str(Params.paths.input_folder) + "/" + weather_input,
     )  # read weather input
 
     wpara, cpara, org_para, spara, outpara, photopara = get_susi_para(
@@ -234,4 +234,3 @@ for stand, weather_input, outname, sitetype, hum in zip(
         sarkaSim=sarkaSim,
         sfc=sfc,
     )
-

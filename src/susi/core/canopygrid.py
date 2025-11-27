@@ -20,9 +20,13 @@ last edit: Oct 2018 / Samuli
 import numpy as np
 import configparser
 
-eps = np.finfo(float).eps
 
-from susi.config import CanopyParameters, CanopyStateParametersArray
+from susi.io.parameter_model import (
+    CanopyParameters,
+    CanopyStateParametersArray,
+)
+
+eps = np.finfo(float).eps
 
 
 class CanopyGrid:

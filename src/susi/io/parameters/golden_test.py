@@ -1,7 +1,6 @@
 import datetime
-from susi.config import (
+from susi.io.parameter_model import (
     Params,
-    MetaData,
     SimulationParameters,
     TreeSpecies,
     NutrientFertilizationParameters,
@@ -15,7 +14,6 @@ from susi.config import (
 )
 
 PARAMETERS = Params(
-    paths=MetaData(),
     canopy_parameters=CanopyParameters(),
     organic_layer_parameters=OrganicLayerParameters(),
     photo_parameters=get_photo_parameters_by_location(

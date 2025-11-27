@@ -8,14 +8,16 @@ Created on 17 Nov 2025
 from susi.core.susi_utils import read_FMI_weather
 from susi.core.susi_main import Susi
 from susi.io.parameters import golden_test
+from susi.io.metadata_model import MetaData
 
 
 # ***************** local call for SUSI*****************************************************
 
+metadata = MetaData()
 
 # mottifile, dict of dicts, telling the growth and yield (Motti files) in each canopy layer with key pointing to integer in the canopylayer dict
 mottifile = {
-    "path": str(golden_test.PARAMETERS.paths.input_folder) + "/",  # Input file folder
+    "path": str(metadata.input_folder) + "/",  # Input file folder
     "dominant": {1: "CF_41.xlsx"},  # Motti-file for the dominant layer
     "subdominant": {
         0: "susi_motti_input_lyr_1.xlsx"
@@ -44,7 +46,7 @@ forc = read_FMI_weather(
     0,
     golden_test.PARAMETERS.simulation_parameters.start_date,
     golden_test.PARAMETERS.simulation_parameters.end_date,
-    sourcefile=golden_test.PARAMETERS.paths.weather_data_path,
+    sourcefile=metadata.weather_data_path,
 )  # read weather input
 
 cpara = golden_test.PARAMETERS.canopy_parameters
@@ -67,7 +69,7 @@ susi.run_susi(
     mottifile=mottifile,
     peat="other",
     photosite="All data",
-    folderName=str(golden_test.PARAMETERS.paths.parent_output_folder) + "/",
+    folderName=str(metadata.parent_output_folder) + "/",
     ageSim=golden_test.PARAMETERS.simulation_parameters.age,
     sarkaSim=golden_test.PARAMETERS.simulation_parameters.L,
     sfc=golden_test.PARAMETERS.simulation_parameters.sfc,

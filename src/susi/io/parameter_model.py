@@ -13,10 +13,7 @@ from pydantic import (
     field_validator,
 )
 
-import susi.io.utils as io_utils
-
-
-project_root_path = io_utils.get_project_root()
+from susi.io.utils import get_project_root
 
 PositiveFloat = Annotated[float, Field(gt=0)]
 NonNegativeFloat = Annotated[float, Field(ge=0)]
@@ -34,13 +31,6 @@ class StrictFrozenModel(BaseModel):
         extra="forbid",  # forbid extra fields
         validate_default=True,  # validate default values
     )
-
-
-class MetaData(StrictFrozenModel):
-    input_folder: DirectoryPath = project_root_path / Path("inputs/")
-    parent_output_folder: DirectoryPath = project_root_path / Path("outputs/")
-
-    weather_data_path: FilePath = project_root_path / Path("inputs/CFw.csv")
 
 
 class OrganicLayerParameters(StrictFrozenModel):
@@ -77,7 +67,7 @@ class OrganicLayerParametersArray:
 
 
 class WeatherParameters(StrictFrozenModel):
-    infolder: DirectoryPath = project_root_path / "\\wfiles\\"
+    infolder: DirectoryPath = get_project_root() / "\\wfiles\\"
     infile_d: FilePath = Path("Tammela_weather_1.csv")
     start_yr: int = 1980
     end_yr: int = 1984
@@ -162,7 +152,7 @@ class CanopyParameters(BaseModel):
 
 
 class OutputParameters(StrictFrozenModel):
-    outfolder: DirectoryPath = project_root_path / Path("outputs/")
+    outfolder: DirectoryPath = get_project_root() / Path("outputs/")
     netcdf: Path = Path("susi.nc")
     startday: int = 1
     startmonth: int = 7  # Päivä josta keskiarvojen laskenta alkaa
@@ -369,7 +359,6 @@ class SimulationParameters(
             "under": self.initial_understorey_age_years * np.ones(self.n),
         }
 
-    @computed_field
     @property
     def sfc(self) -> np.ndarray:
         # site fertility class for all nodes along the strip
@@ -402,7 +391,6 @@ class SimulationParameters(
 
 
 class Params(StrictFrozenModel):
-    paths: MetaData
     simulation_parameters: SimulationParameters
     canopy_parameters: CanopyParameters
     organic_layer_parameters: OrganicLayerParameters

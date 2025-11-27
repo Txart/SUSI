@@ -7,7 +7,7 @@ Created on Thu Jan 17 08:59:36 2019
 
 import numpy as np
 
-from susi.config import OrganicLayerParametersArray
+from susi.io.parameter_model import OrganicLayerParametersArray
 
 eps = np.finfo(float).eps
 
