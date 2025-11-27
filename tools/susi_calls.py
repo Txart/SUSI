@@ -5,7 +5,6 @@ Created on 17 Nov 2025
 @author: alauren, txart
 """
 
-import numpy as np
 from susi.core.susi_utils import read_FMI_weather
 from susi.core.susi_main import Susi
 from susi.io.parameters import golden_test
@@ -68,7 +67,7 @@ susi.run_susi(
     mottifile=mottifile,
     peat="other",
     photosite="All data",
-    folderName=str(golden_test.PARAMETERS.paths.output_folder) + "/",
+    folderName=str(golden_test.PARAMETERS.paths.parent_output_folder) + "/",
     ageSim=golden_test.PARAMETERS.simulation_parameters.age,
     sarkaSim=golden_test.PARAMETERS.simulation_parameters.L,
     sfc=golden_test.PARAMETERS.simulation_parameters.sfc,

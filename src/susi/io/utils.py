@@ -1,3 +1,6 @@
+import string
+import random
+from datetime import datetime
 from pathlib import Path
 
 
@@ -9,3 +12,17 @@ def get_project_root() -> Path:
         if (parent / "pyproject.toml").exists():
             return parent
     raise FileNotFoundError("Could not find project root")
+
+
+def generate_current_datetime_stamp() -> str:
+    return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+
+
+def random_id_generator(size) -> str:
+    characters = string.ascii_uppercase + string.digits
+    return "".join(random.choice(characters) for _ in range(size))
+
+
+def generate_experiment_ID() -> str:
+    datetime_stamp = generate_current_datetime_stamp()
+    return datetime_stamp + "_" + random_id_generator(size=8)

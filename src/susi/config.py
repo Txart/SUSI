@@ -36,9 +36,9 @@ class StrictFrozenModel(BaseModel):
     )
 
 
-class FilePaths(StrictFrozenModel):
+class MetaData(StrictFrozenModel):
     input_folder: DirectoryPath = project_root_path / Path("inputs/")
-    output_folder: DirectoryPath = project_root_path / Path("outputs/")
+    parent_output_folder: DirectoryPath = project_root_path / Path("outputs/")
 
     weather_data_path: FilePath = project_root_path / Path("inputs/CFw.csv")
 
@@ -402,7 +402,7 @@ class SimulationParameters(
 
 
 class Params(StrictFrozenModel):
-    paths: FilePaths
+    paths: MetaData
     simulation_parameters: SimulationParameters
     canopy_parameters: CanopyParameters
     organic_layer_parameters: OrganicLayerParameters
