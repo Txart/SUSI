@@ -11,9 +11,22 @@ from pydantic import (
     Field,
     ConfigDict,
     field_validator,
+    field_serializer,
 )
 
 from susi.io.utils import get_project_root
+
+
+def mass_mor_from_drainage_Pitkanen(drain_age: float) -> float:
+    # Pitkänen et al. 2012 Forest Ecology and Management 284 (2012) 100–106
+    return 1.616 * np.log(drain_age) - 1.409
+
+
+def h_mor_from_drainage_and_mass_mor_Pitkanen(
+    drain_age: float, rho_mor: float
+) -> float:
+    return mass_mor_from_drainage_Pitkanen(drain_age) / rho_mor
+
 
 PositiveFloat = Annotated[float, Field(gt=0)]
 NonNegativeFloat = Annotated[float, Field(ge=0)]
@@ -30,6 +43,7 @@ class StrictFrozenModel(BaseModel):
         frozen=True,  # immutable
         extra="forbid",  # forbid extra fields
         validate_default=True,  # validate default values
+        json_encoders={np.ndarray: lambda v: v.tolist()},
     )
 
 
@@ -398,13 +412,7 @@ class Params(StrictFrozenModel):
     photo_parameters: PhotoParameters
     output_parameters: OutputParameters
 
-
-def mass_mor_from_drainage_Pitkanen(drain_age: float) -> float:
-    # Pitkänen et al. 2012 Forest Ecology and Management 284 (2012) 100–106
-    return 1.616 * np.log(drain_age) - 1.409
-
-
-def h_mor_from_drainage_and_mass_mor_Pitkanen(
-    drain_age: float, rho_mor: float
-) -> float:
-    return mass_mor_from_drainage_Pitkanen(drain_age) / rho_mor
+    def dump_json_to_file(self, experiments_folder: Path) -> None:
+        filepath = experiments_folder / Path("params.json")
+        with open(filepath, "w") as f:
+            f.write(self.model_dump_json())

@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Self
+from importlib.metadata import version
+import platform
 from pydantic import (
     BaseModel,
     DirectoryPath,
@@ -7,6 +8,7 @@ from pydantic import (
     ConfigDict,
     Field,
     model_validator,
+    computed_field,
 )
 
 import susi.io.utils as io_utils
@@ -27,6 +29,12 @@ class MetaData(BaseModel):
 
     weather_data_path: FilePath = project_root_path / Path("inputs/CFw.csv")
 
+    experiment_folder_path: Path = Field(
+        init=False,
+        default=Path(),
+        description="Where all simulation results go. The name of the folder is the experiment_id.",
+    )
+
     experiment_id: str = Field(
         init=False,
         default=str(),
@@ -39,10 +47,28 @@ class MetaData(BaseModel):
         description="Initial timestamp. (Technically, it takes the timestamp at the time the current class is created).",
     )
 
-    experiment_folder_path: Path = Field(
+    timestamp_end: str = Field(
         init=False,
-        default=Path(),
-        description="Where all simulation results go. The name of the folder is the experiment_id.",
+        default=str(),
+        description="Final timestamp, recorded when the metadata dumping is done.",
+    )
+
+    git_commit: str = Field(
+        init=False,
+        default=io_utils.get_git_revision_short_hash(),
+        description="Git commit identifier.",
+    )
+
+    susi_version: str = Field(
+        init=False,
+        default=version("susi"),
+        description="Model version as it appears in pyproject.toml",
+    )
+
+    host_info: str = Field(
+        init=False,
+        default=str(platform.uname()),
+        description="Info about who ran the simulations.",
     )
 
     @model_validator(mode="after")
@@ -65,3 +91,8 @@ class MetaData(BaseModel):
 
         io_utils.create_folder(path=self.experiment_folder_path)
         return self
+
+    def dump_json_to_file(self) -> None:
+        filepath = self.experiment_folder_path / Path("metadata.json")
+        with open(filepath, "w") as f:
+            f.write(self.model_dump_json())

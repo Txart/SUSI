@@ -55,6 +55,12 @@ spara = golden_test.PARAMETERS.simulation_parameters
 photopara = golden_test.PARAMETERS.photo_parameters
 outpara = golden_test.PARAMETERS.output_parameters
 
+# Write output parameters
+golden_test.PARAMETERS.dump_json_to_file(
+    experiments_folder=metadata.experiment_folder_path
+)
+metadata.dump_json_to_file()
+
 susi.run_susi(
     forc,
     wpara,
