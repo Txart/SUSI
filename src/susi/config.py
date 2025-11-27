@@ -419,37 +419,3 @@ def h_mor_from_drainage_and_mass_mor_Pitkanen(
     drain_age: float, rho_mor: float
 ) -> float:
     return mass_mor_from_drainage_Pitkanen(drain_age) / rho_mor
-
-
-def get_susi_para(
-    wlocation=None,
-    peat=None,
-    photosite=LocationsForPhotoParams("All_data"),
-    folderName=None,
-    hdomSim=None,
-    volSim=None,
-    ageSim=None,
-    sarkaSim=None,
-    sfc=None,
-    susiPath=None,
-    ddwest=None,
-    ddeast=None,
-    n=None,
-    bd=None,
-    peatN=None,
-    peatP=None,
-    peatK=None,
-):
-    # ********** Stand parameters and weather forcing*******************
-    # --------------Weather variables 10 km x 10 km grid
-    if susiPath is None:
-        susiPath = ""
-
-    # ----------- Arrange and make coherent------
-    # cpara['lat']=wpara[wlocation]['lat']; cpara['lon']=wpara[wlocation]['lon']
-
-    o_w = wpara[wlocation] if wlocation is not None else wpara
-    o_s = spara[peat] if peat is not None else spara
-    # o_p = photopara[photosite] if photosite is not None else photopara
-
-    return o_w, cpara, org_para, o_s, outpara, photopara
