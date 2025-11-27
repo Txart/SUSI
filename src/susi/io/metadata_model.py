@@ -20,6 +20,8 @@ class MetaData(BaseModel):
         validate_default=True,  # validate default values
     )
 
+    metadata_schema_version: int = 1
+
     input_folder: DirectoryPath = project_root_path / Path("inputs/")
     parent_output_folder: DirectoryPath = project_root_path / Path("outputs/")
 

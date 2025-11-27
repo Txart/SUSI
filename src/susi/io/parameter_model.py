@@ -391,6 +391,7 @@ class SimulationParameters(
 
 
 class Params(StrictFrozenModel):
+    params_schema_version: int = 1
     simulation_parameters: SimulationParameters
     canopy_parameters: CanopyParameters
     organic_layer_parameters: OrganicLayerParameters
