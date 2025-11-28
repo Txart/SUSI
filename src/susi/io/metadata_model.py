@@ -8,13 +8,12 @@ from pydantic import (
     ConfigDict,
     Field,
     model_validator,
-    computed_field,
 )
 
 import susi.io.utils as io_utils
+from susi.io.app_structure import AppStructure
 
-
-project_root_path = io_utils.get_project_root()
+app_structure = AppStructure()
 
 
 class MetaData(BaseModel):
@@ -24,10 +23,7 @@ class MetaData(BaseModel):
 
     metadata_schema_version: int = 1
 
-    input_folder: DirectoryPath = project_root_path / Path("inputs/")
-    parent_output_folder: DirectoryPath = project_root_path / Path("outputs/")
-
-    weather_data_path: FilePath = project_root_path / Path("inputs/CFw.csv")
+    weather_data_path: FilePath = io_utils.get_project_root() / Path("inputs/CFw.csv")
 
     experiment_folder_path: Path = Field(
         init=False,
@@ -81,18 +77,13 @@ class MetaData(BaseModel):
 
         self.timestamp_start = current_timestamp
         self.experiment_id = experiment_id
-        self.experiment_folder_path = self.parent_output_folder.joinpath(experiment_id)
+        self.experiment_folder_path = app_structure.output_folder.joinpath(
+            experiment_id
+        )
 
-        return self
-
-    @model_validator(mode="after")
-    def create_experiment_folder(self):
-        # Creates experiment folder after validation
-
-        io_utils.create_folder(path=self.experiment_folder_path)
         return self
 
     def dump_json_to_file(self) -> None:
-        filepath = self.experiment_folder_path / Path("metadata.json")
+        filepath = self.experiment_folder_path / app_structure.metadata_store_filename
         with open(filepath, "w") as f:
             f.write(self.model_dump_json())

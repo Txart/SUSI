@@ -11,10 +11,12 @@ from pydantic import (
     Field,
     ConfigDict,
     field_validator,
-    field_serializer,
 )
 
 from susi.io.utils import get_project_root
+from susi.io.app_structure import AppStructure
+
+app_structure = AppStructure()
 
 
 def mass_mor_from_drainage_Pitkanen(drain_age: float) -> float:
@@ -413,6 +415,6 @@ class Params(StrictFrozenModel):
     output_parameters: OutputParameters
 
     def dump_json_to_file(self, experiments_folder: Path) -> None:
-        filepath = experiments_folder / Path("params.json")
+        filepath = experiments_folder / app_structure.parameter_store_filename
         with open(filepath, "w") as f:
             f.write(self.model_dump_json())

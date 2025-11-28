@@ -1,3 +1,4 @@
+import json
 import subprocess
 import string
 import random
@@ -43,3 +44,8 @@ def get_git_revision_short_hash() -> str:
         .decode("ascii")
         .strip()
     )
+
+
+def read_json_file(path: Path) -> dict:
+    with open(path, "r") as f:
+        return json.load(f)
