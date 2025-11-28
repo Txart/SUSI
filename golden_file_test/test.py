@@ -15,8 +15,9 @@ import subprocess
 import netCDF4
 import numpy as np
 
-from susi.io.metadata_model import MetaData
+from susi.io.app_structure import AppStructure
 from susi.io.utils import get_project_root
+from susi.io import netcdf_utils
 
 
 def hash_netcdf_file(file_path, variables=None):
@@ -33,16 +34,17 @@ def hash_netcdf_file(file_path, variables=None):
     """
     ds = netCDF4.Dataset(file_path, "r")
 
-    if variables is None:
-        variables = list(ds.variables.keys())
+    # Read all datasets
+    all_var_paths = netcdf_utils.list_variable_absolute_paths(group=ds)
+    all_data = {
+        var_path: netcdf_utils.get_var_by_path(ds, var_path)
+        for var_path in all_var_paths
+    }
 
     h = hashlib.sha256()
 
-    for var in variables:
-        data = ds.variables[var][:]
-        # Ensure data is contiguous and in consistent byte order
-        data_bytes = np.ascontiguousarray(data).tobytes()
-        h.update(data_bytes)
+    data_bytes = np.ascontiguousarray(all_data).tobytes()
+    h.update(data_bytes)
 
     ds.close()
     return h.hexdigest()
@@ -50,11 +52,11 @@ def hash_netcdf_file(file_path, variables=None):
 
 project_root_path = get_project_root()
 
-default_file_paths = MetaData()
+app_structure = AppStructure()
 
 CURRENT_SUSI_CALLS_PATH = project_root_path / Path("tools/susi_calls.py")
 GOLDEN_NETCDF_FILE_PATH = project_root_path / Path("golden_file_test/golden_susi.nc")
-NEW_SUSI_NETCDF_FILE_PATH = default_file_paths.parent_output_folder / Path("susi.nc")
+NEW_SUSI_NETCDF_FILE_PATH = app_structure.output_folder / Path("susi.nc")
 
 print("Computing golden hash...")
 golden_hash = hash_netcdf_file(file_path=GOLDEN_NETCDF_FILE_PATH)
