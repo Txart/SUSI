@@ -1,20 +1,21 @@
-from pathlib import Path
 import datetime
-import numpy as np
-from typing import Annotated, Callable
 from enum import Enum
+from pathlib import Path
+from typing import Annotated, Callable
+
+import numpy as np
 from pydantic import (
     BaseModel,
+    ConfigDict,
     DirectoryPath,
+    Field,
     FilePath,
     computed_field,
-    Field,
-    ConfigDict,
     field_validator,
 )
 
-from susi.io.utils import get_project_root
 from susi.io.app_structure import AppStructure
+from susi.io.utils import get_project_root
 
 app_structure = AppStructure()
 

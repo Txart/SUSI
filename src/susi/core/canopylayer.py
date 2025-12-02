@@ -7,6 +7,7 @@ Created on Sat Apr  2 17:37:43 2022
 
 import numpy as np
 from scipy.interpolate import interp1d
+
 from susi.core.allometry import Allometry
 from susi.core.susi_utils import assimilation_yr
 
@@ -532,7 +533,7 @@ class Canopylayer:
         self.leafmass = self.new_lmass
         vol_ini = self.volume.copy()
         """
-        if self.name=='dominant': 
+        if self.name=='dominant':
             print (np.round(np.mean(self.biomass),2), 'biomass ini' )
             print (np.round(np.mean(self.volume*self.stems),2), 'volume ini' )
             print (np.round(np.mean(self.stems),2), 'stems ini' )

@@ -1,13 +1,11 @@
 from pathlib import Path
+
 import netCDF4
 import pandas as pd
 
-from susi.io import netcdf_utils
-from susi.io.app_structure import AppStructure
-from susi.io.metadata_model import MetaData
-from susi.io.parameter_model import Params
 import susi.io.utils as io_utils
 from susi.io import netcdf_utils
+from susi.io.app_structure import AppStructure
 
 app_structure = AppStructure()
 
@@ -45,34 +43,5 @@ all_data = {
     var_path: netcdf_utils.get_var_by_path(ds, var_path) for var_path in all_var_paths
 }
 
-ds.close()
 
-
-# %%
-ds = netCDF4.Dataset(app_structure.output_folder / Path("susi.nc"), "r")
-
-# Read all datasets
-all_var_paths = netcdf_utils.list_variable_absolute_paths(group=ds)
-all_data = {
-    var_path: netcdf_utils.get_var_by_path(ds, var_path) for var_path in all_var_paths
-}
-
-with open("susinc.txt", "w") as f:
-    f.write(str(all_data))
-
-ds.close()
-
-ds = netCDF4.Dataset(
-    app_structure.project_root_path / Path("golden_file_test/golden_susi.nc"), "r"
-)
-
-# Read all datasets
-all_var_paths = netcdf_utils.list_variable_absolute_paths(group=ds)
-all_data = {
-    var_path: netcdf_utils.get_var_by_path(ds, var_path) for var_path in all_var_paths
-}
-
-with open("golden_susinc.txt", "w") as f:
-    f.write(str(all_data))
-
-ds.close()
+# ds.close()

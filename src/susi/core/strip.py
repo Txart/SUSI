@@ -6,7 +6,8 @@ Created on Sat Jan 19 19:59:31 2019
 """
 
 import numpy as np
-from susi.core.susi_utils import peat_hydrol_properties, CWTr
+
+from susi.core.susi_utils import CWTr, peat_hydrol_properties
 
 
 class StripHydrology:
@@ -252,7 +253,7 @@ class StripHydrology:
         )
         n = len(Htmp1)
 
-        if DrIrr == False:
+        if not DrIrr:
             hs[0] = Htmp1[1] if Htmp1[0] > Htmp1[1] else min(ele[0] + h0_west, Htmp1[1])
             hs[n - 1] = (
                 Htmp1[n - 2]

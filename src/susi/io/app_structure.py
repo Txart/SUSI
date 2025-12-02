@@ -1,8 +1,6 @@
-from pydantic import (
-    BaseModel,
-    DirectoryPath,
-)
 from pathlib import Path
+
+from pydantic import BaseModel, DirectoryPath
 
 import susi.io.utils as io_utils
 

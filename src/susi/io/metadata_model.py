@@ -1,14 +1,8 @@
-from pathlib import Path
-from importlib.metadata import version
 import platform
-from pydantic import (
-    BaseModel,
-    DirectoryPath,
-    FilePath,
-    ConfigDict,
-    Field,
-    model_validator,
-)
+from importlib.metadata import version
+from pathlib import Path
+
+from pydantic import BaseModel, ConfigDict, Field, FilePath, model_validator
 
 import susi.io.utils as io_utils
 from susi.io.app_structure import AppStructure

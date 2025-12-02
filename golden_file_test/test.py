@@ -9,15 +9,16 @@
 # The hashes of the 2 files should be identical.
 
 
-from pathlib import Path
 import hashlib
 import subprocess
+from pathlib import Path
+
 import netCDF4
 import numpy as np
 
+from susi.io import netcdf_utils
 from susi.io.app_structure import AppStructure
 from susi.io.utils import get_project_root
-from susi.io import netcdf_utils
 
 
 def hash_netcdf_file(file_path, variables=None):

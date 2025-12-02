@@ -5,13 +5,12 @@ Created on 17 Nov 2025
 @author: alauren, txart
 """
 
-from susi.core.susi_utils import read_FMI_weather
-from susi.core.susi_main import Susi
-from susi.io.parameters import golden_test
-from susi.io.metadata_model import MetaData
-from susi.io.app_structure import AppStructure
 import susi.io.utils as io_utils
-
+from susi.core.susi_main import Susi
+from susi.core.susi_utils import read_FMI_weather
+from susi.io.app_structure import AppStructure
+from susi.io.metadata_model import MetaData
+from susi.io.parameters import golden_test
 
 # ***************** local call for SUSI*****************************************************
 

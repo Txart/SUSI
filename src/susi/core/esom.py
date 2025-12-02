@@ -8,6 +8,7 @@ Created on Wed Feb  9 10:41:03 2022
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.sparse import diags
+
 from susi.core.susi_utils import peat_hydrol_properties, wrc
 
 
@@ -665,8 +666,8 @@ class Esom:
                     peat_w3,
                     H_w,
                 )
-            except:
-                print("fail in rates, esom run_yr")
+            except Exception as e:
+                print(f"fail in rates, esom run_yr. Error: {e}")
 
             if n == 243:  # n is day of the year
                 self.M[:, :, 0] = (
