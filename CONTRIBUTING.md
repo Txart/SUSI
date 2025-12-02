@@ -145,18 +145,4 @@ If CI fails, the PR **cannot** be merged.
 
 This is configured in the `.github/workflows/ci.yaml` file.
 
----
 
-
-
-
----
-
-# `.github/workflows/ci.yaml`
-
-```yaml
-```
-
----
-
-This completes the **CONTRIBUTING.md**, **pre‑commit configuration**, and **CI workflow**.
