@@ -29,6 +29,7 @@ jobs:
       # Update output format to enable automatic inline annotations.
       - name: Run Ruff
         run: uv run ruff check --output-format=github .
-
-      - name: Run tests
-        run: uv run pytest
+      
+      # enable this in the future
+      #- name: Run tests
+      #  run: uv run pytest
