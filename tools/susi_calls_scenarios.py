@@ -5,12 +5,14 @@ Created on Wed Sep 30 14:10:42 2020
 @author: alauren
 """
 
-import numpy as np
 import datetime
-from susi.core.susi_utils import read_FMI_weather
-from susi.io.susi_para import get_susi_para
+
+import numpy as np
+
 from susi.core.susi_main import Susi
+from susi.core.susi_utils import read_FMI_weather
 from susi.io.parameters.develop_scens import Params
+from susi.io.susi_para import get_susi_para
 
 stands = [
     "SF_22.xlsx",

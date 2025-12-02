@@ -38,4 +38,3 @@ class Fertilization:
                 )  # nutrient release from the fertilizer
 
         return self.release
-

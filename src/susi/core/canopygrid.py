@@ -17,14 +17,11 @@ last edit: Oct 2018 / Samuli
 
 """
 
-import numpy as np
 import configparser
 
+import numpy as np
 
-from susi.io.parameter_model import (
-    CanopyParameters,
-    CanopyStateParametersArray,
-)
+from susi.io.parameter_model import CanopyParameters, CanopyStateParametersArray
 
 eps = np.finfo(float).eps
 
@@ -356,8 +353,8 @@ class CanopyGrid:
 
         kp = self.physpara.kp  # (-) attenuation coefficient for PAR
         q50 = self.physpara.q50  # Wm-2, half-sat. of leaf light response
-        rw = self.physpara.rw  # rew parameter
-        rwmin = self.physpara.rwmin  # rew parameter
+        # rw = self.physpara.rw  # rew parameter
+        # rwmin = self.physpara.rwmin  # rew parameter
 
         tau = np.exp(-kp * self.LAI)  # fraction of Qp at ground relative to canopy top
 
@@ -736,9 +733,9 @@ def penman_monteith(AE, D, T, Gs, Ga, P=101300.0, units="W"):
 
     x = (s * AE + rho * cp * Ga * D) / (s + g * (1.0 + Ga / Gs))  # Wm-2
 
-    if units is "mm":
+    if units == "mm":
         x = x / L  # kgm-2s-1 = mms-1
-    if units is "mol":
+    if units == "mol":
         x = x / L / Mw  # mol m-2 s-1
 
     x = np.maximum(x, 0.0)

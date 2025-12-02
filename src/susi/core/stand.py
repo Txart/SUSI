@@ -6,6 +6,7 @@ Created on Tue Feb  1 18:59:52 2022
 """
 
 import numpy as np
+
 from susi.core.canopylayer import Canopylayer
 
 
@@ -620,4 +621,3 @@ class Stand:
             cl.n_woody_lresid = cl.n_woody_lresid * 0.0
             cl.p_woody_lresid = cl.p_woody_lresid * 0.0
             cl.k_woody_lresid = cl.k_woody_lresid * 0.0
-

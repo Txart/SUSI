@@ -5,11 +5,10 @@ Created on Thu Jan 24 22:04:53 2019
 @author: lauren
 """
 
-import pandas as pd
-import numpy as np
 import matplotlib.pylab as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
-from scipy.interpolate import interp1d
 
 sns.set()
 
@@ -42,7 +41,7 @@ def c_and_nut_to_excel(
     outpara,
     scen,
 ):
-    initial = {"inivol": inivol}
+    # initial = {"inivol": inivol}
     data = {
         "vols": vols,
         "phys_restr": phys_restrictions,
@@ -129,12 +128,12 @@ def output_dwt_growing_season(
 
 def write_mese(fout, nro, v_ini, v, iv5, Nrel, Prel, Krel, Crel, dwt_loc, cb, cbt, sfc):
     # from xlutils.copy import copy
-    from xlutils import copy
     import xlrd
+    from xlutils import copy
 
     # fout = outpara['outfolder'] + outpara['ofile']
     rb = xlrd.open_workbook(fout)  # ,formatting_info=True)
-    cols = rb.sheet_by_name("Summary").ncols
+    # cols = rb.sheet_by_name("Summary").ncols
     rows = rb.sheet_by_name("Summary").nrows
     for i in range(rb.nsheets):
         sheet = rb.sheet_by_index(i)
@@ -163,22 +162,22 @@ def write_mese(fout, nro, v_ini, v, iv5, Nrel, Prel, Krel, Crel, dwt_loc, cb, cb
 
 def write_mese_scen(fout, nro, v_ini, v_end, gr, w, dw):
     # from xlutils.copy import copy
-    from xlutils import copy
     import xlrd
+    from xlutils import copy
 
     r = len(v_end)  # rounds
     ix0 = range(2, 2 + r)
     ix1 = range(2 + r, 2 + 2 * r)
     ix2 = range(2 + 2 * r, 2 + 3 * r)
     ix3 = range(2 + 3 * r, 2 + 4 * r)
-    ix4 = range(2 + 4 * r, 2 + 5 * r)
-    ix5 = range(2 + 5 * r, 2 + 6 * r)
-    ix6 = range(2 + 6 * r, 2 + 7 * r)
-    ix7 = range(2 + 7 * r, 2 + 8 * r)
-    ix8 = 2 + 8 * r
+    # ix4 = range(2 + 4 * r, 2 + 5 * r)
+    # ix5 = range(2 + 5 * r, 2 + 6 * r)
+    # ix6 = range(2 + 6 * r, 2 + 7 * r)
+    # ix7 = range(2 + 7 * r, 2 + 8 * r)
+    # ix8 = 2 + 8 * r
     # fout = outpara['outfolder'] + outpara['ofile']
     rb = xlrd.open_workbook(fout)  # ,formatting_info=True)
-    cols = rb.sheet_by_name("Summary").ncols
+    # cols = rb.sheet_by_name("Summary").ncols
     rows = rb.sheet_by_name("Summary").nrows
     for i in range(rb.nsheets):
         sheet = rb.sheet_by_index(i)
@@ -205,8 +204,8 @@ def write_mese_scen(fout, nro, v_ini, v_end, gr, w, dw):
 
 def write_jaali_scen(fout, nro, ID, v_ini, v_end, gr, cb, dcb, w, dw, runo, druno):
     # from xlutils.copy import copy
-    from xlutils import copy
     import xlrd
+    from xlutils import copy
 
     r = len(v_end)  # rounds
     ix0 = range(2, 2 + r)
@@ -219,7 +218,7 @@ def write_jaali_scen(fout, nro, ID, v_ini, v_end, gr, cb, dcb, w, dw, runo, drun
 
     # fout = outpara['outfolder'] + outpara['ofile']
     rb = xlrd.open_workbook(fout)  # ,formatting_info=True)
-    cols = rb.sheet_by_name("Summary").ncols
+    # cols = rb.sheet_by_name("Summary").ncols
     rows = rb.sheet_by_name("Summary").nrows
     for i in range(rb.nsheets):
         sheet = rb.sheet_by_index(i)
@@ -252,12 +251,12 @@ def write_jaali_scen(fout, nro, ID, v_ini, v_end, gr, cb, dcb, w, dw, runo, drun
 
 def write_demand(fout, nro, Ndem, Pdem, Kdem):
     # from xlutils.copy import copy
-    from xlutils import copy
     import xlrd
+    from xlutils import copy
 
     # fout = outpara['outfolder'] + outpara['ofile']
     rb = xlrd.open_workbook(fout)  # ,formatting_info=True)
-    cols = rb.sheet_by_name("Summary").ncols
+    # cols = rb.sheet_by_name("Summary").ncols
     rows = rb.sheet_by_name("Summary").nrows
     for i in range(rb.nsheets):
         sheet = rb.sheet_by_index(i)
@@ -280,12 +279,12 @@ def write_excel(
     wlocation, wpara, spara, outpara, LAI, hdom, h0_west, h0_east, summer, summermed
 ):
     # from xlutils.copy import copy
-    from xlutils import copy
     import xlrd
+    from xlutils import copy
 
     fout = outpara["outfolder"] + outpara["ofile"]
     rb = xlrd.open_workbook(fout)  # ,formatting_info=True)
-    cols = rb.sheet_by_name("Summary").ncols
+    # cols = rb.sheet_by_name("Summary").ncols
     rows = rb.sheet_by_name("Summary").nrows
     for i in range(rb.nsheets):
         sheet = rb.sheet_by_index(i)
@@ -303,9 +302,9 @@ def write_excel(
     outSummary.write(rows, 4, spara.slope)
     outSummary.write(rows, 5, wlocation)
     outSummary.write(rows, 6, spara.peat_type)
-    g = LAI if LAI is not "iterable" else max(LAI)
+    # g = LAI if LAI != "iterable" else max(LAI)
     outSummary.write(rows, 7, max(LAI))
-    h = hdom if hdom is not "iterable" else max(hdom)
+    # h = hdom if hdom != "iterable" else max(hdom)
     outSummary.write(rows, 8, max(hdom))
     outSummary.write(rows, 9, str(wpara["start_yr"]) + " " + str(wpara["end_yr"]))
     outSummary.write(rows, 10, summer["dwt"].mean())
@@ -319,13 +318,13 @@ def write_excel(
 def write_gr_excel(wlocation, wpara, spara, outpara, gN, gP, gK, c, cr_depth, gr_crd):
     print("now printing gr-excel")
     # from xlutils.copy import copy
-    from xlutils import copy
     import xlrd
+    from xlutils import copy
 
     title = "Control vs " + spara.scenario_name[c]
     fout = outpara["outfolder"] + outpara["gr_file"]
     rb = xlrd.open_workbook(fout)  # ,formatting_info=True)
-    cols = rb.sheet_by_name("Summary").ncols
+    # cols = rb.sheet_by_name("Summary").ncols
     rows = rb.sheet_by_name("Summary").nrows
     print(rows)
     for i in range(rb.nsheets):
@@ -365,7 +364,7 @@ def write_gr_excel(wlocation, wpara, spara, outpara, gN, gP, gK, c, cr_depth, gr
 def outfig(
     summer_dwt, co2_respi, growth_response, ditch_depth, relative_response, rounds
 ):
-    fig = plt.figure(
+    _fig = plt.figure(
         num="Susi drainage",
         facecolor=(232 / 255.0, 243 / 255.0, 245.0 / 255),
         edgecolor="k",
@@ -438,7 +437,7 @@ def fig_stand_growth(
 ):
     sns.set()
 
-    fig = plt.figure(
+    _fig = plt.figure(
         num="Growth and production",
         facecolor=(232 / 255.0, 243 / 255.0, 245.0 / 255),
         edgecolor="k",
@@ -453,7 +452,7 @@ def fig_stand_growth(
         layout = "33"
 
     fg_no = layout + str(r + 1)
-    fig = plt.subplot(fg_no)
+    _fig = plt.subplot(fg_no)
     length = end_yr - start_yr + 1.0
     start = max(0.0, ageSim - 3.0)
     x = np.arange(start, ageSim + length, 0.1)
@@ -482,7 +481,7 @@ def fig_stand_growth_node_bck(
 ):
     sns.set()
 
-    fig = plt.figure(
+    _fig = plt.figure(
         num="Growth and production",
         facecolor=(232 / 255.0, 243 / 255.0, 245.0 / 255),
         edgecolor="k",
@@ -497,7 +496,7 @@ def fig_stand_growth_node_bck(
         layout = "33"
 
     fg_no = layout + str(r + 1)
-    fig = plt.subplot(fg_no)
+    _fig = plt.subplot(fg_no)
     length = end_yr - start_yr + 1.0
     start = max(0.0, ageSim - 3.0)
     x = np.arange(start, ageSim + length, 0.1)
@@ -529,7 +528,7 @@ def fig_stand_growth_node(
     sns.set()
     # yrs, cols = np.shape(agearray)
 
-    fig = plt.figure(
+    _fig = plt.figure(
         num="Susi-tulokset",
         facecolor=(232 / 255.0, 243 / 255.0, 245.0 / 255),
         edgecolor="k",
@@ -537,7 +536,7 @@ def fig_stand_growth_node(
     )
     gr_limit = 0.15  # allowed difference from table growth
 
-    fig = plt.subplot(211)  # growth figure
+    _fig = plt.subplot(211)  # growth figure
     length = end_yr - start_yr + 1.0  #
 
     for column, agerange in enumerate(agearray.T):
@@ -605,7 +604,7 @@ def fig_hydro(
     sim_yrs = len(het) / 365.0
     aa, bb = np.shape(hts)
     x = np.linspace(0, L, n)
-    dy = float(L / n)
+    # dy = float(L / n)
     fig = plt.figure(
         num="Striphy" + scen,
         facecolor=(232 / 255.0, 243 / 255.0, 245.0 / 255),
@@ -677,7 +676,7 @@ def fig_hydro(
     plt.plot(range(aa), limit2, "k--", range(aa), surf, "k-")
     plt.fill_between(range(aa), limit2, surf, color="green", alpha=0.3)
     plt.fill_between(range(aa), limit3, surf, color="red", alpha=0.3)
-    xx = range(np.shape(hts)[0])
+    _xx = range(np.shape(hts)[0])
     yy = hts[:, mid] - ele[mid]
     yywest = hts[:, west] - ele[west]
     yyeast = hts[:, east] - ele[east]
@@ -813,7 +812,7 @@ def weather_fig(df):
     fig = plt.figure(
         num="Susi - weather data", figsize=[15.0, 8.0], facecolor="#C1ECEC"
     )  # see hex color codes from https://www.rapidtables.com/web/color/html-color-codes.html
-    municipality = df["Kunta"][0]
+    # municipality = df["Kunta"][0]
     # fig.suptitle('Weather data, '+ filter(lambda x: x in printable, municipality), fontsize=18)
     ax1 = fig.add_axes([0.05, 0.55, 0.6, 0.35])  # left, bottom, width, height
     ax1.plot(df.index, df["Prec"].values, "b-", label="Rainfall")

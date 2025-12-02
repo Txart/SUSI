@@ -5,29 +5,33 @@ Created on Mon May 21 18:38:10 2018
 @author: lauren
 """
 
-import numpy as np
-import pandas as pd
 import datetime
 
+import numpy as np
+import pandas as pd
+
 from susi.core.canopygrid import CanopyGrid
-from susi.core.mosslayer import MossLayer
-from susi.core.strip import StripHydrology, drain_depth_development
-from susi.core.temperature import PeatTemperature
+from susi.core.esom import Esom
+from susi.core.fertilization import Fertilization
 
 # from docclass import DocModel
 from susi.core.gvegetation import Gvegetation
-from susi.core.esom import Esom
-from susi.core.stand import Stand
 from susi.core.methane import Methane
-from susi.core.fertilization import Fertilization
+from susi.core.mosslayer import MossLayer
 from susi.core.outputs import Outputs
+from susi.core.stand import Stand
+from susi.core.strip import StripHydrology, drain_depth_development
 from susi.core.susi_io import print_site_description
-from susi.core.susi_utils import rew_drylimit
-from susi.core.susi_utils import get_temp_sum, heterotrophic_respiration_yr, ojanen_2019
-
+from susi.core.susi_utils import (
+    get_temp_sum,
+    heterotrophic_respiration_yr,
+    ojanen_2019,
+    rew_drylimit,
+)
+from susi.core.temperature import PeatTemperature
 from susi.io.parameter_model import (
-    OrganicLayerParametersArray,
     CanopyStateParametersArray,
+    OrganicLayerParametersArray,
 )
 
 
@@ -170,7 +174,7 @@ class Susi:
         if switches["Ojanen2010_2019"]:
             out.initialize_ojanen()
         # ********* Above ground hydrology initialization ***************
-        cmask = np.ones(
+        _cmask = np.ones(
             spara.n
         )  # compute canopy and moss for each soil column (0, and n-1 are ditches)
         canopy_state_parameters_array = CanopyStateParametersArray(

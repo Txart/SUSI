@@ -6,13 +6,25 @@ Created on Tue Aug 08 10:38:45 2017
 @author: lauren
 """
 
+import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
+from pyproj import CRS, Transformer
+from scipy.interpolate import InterpolatedUnivariateSpline as interS
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
-import matplotlib.pylab as plt
-from scipy.interpolate import InterpolatedUnivariateSpline as interS
-from pyproj import CRS, Transformer
+
+
+def wcont(x, a):
+    return a[0] + a[1] * x + a[2] * x**2.0
+
+
+def van_g(pot, p):
+    return p[1] + (p[0] - p[1]) / (1.0 + (p[2] * pot) ** p[3]) ** (1.0 - 1.0 / p[3])
+
+
+def K(x, a):
+    return 10.0 ** (a[0] + a[1] * x) / 100.0  # to m/s
 
 
 def peat_hydrol_properties(x, unit="g/cm3", var="bd", ptype="A"):
@@ -91,12 +103,6 @@ def peat_hydrol_properties(x, unit="g/cm3", var="bd", ptype="A"):
     Ksat = np.zeros((np.size(x)))
 
     # wcont = lambda x, (a0, a1, a2): a0 + a1*x + a2*x**2.
-    wcont = lambda x, *a: a[0] + a[1] * x + a[2] * x**2.0
-    van_g = lambda pot, *p: p[1] + (p[0] - p[1]) / (1.0 + (p[2] * pot) ** p[3]) ** (
-        1.0 - 1.0 / p[3]
-    )
-    # K = lambda x, (a0, a1): 10.**(a0 + a1*x) / 100.   # to m/s
-    K = lambda x, *a: 10.0 ** (a[0] + a[1] * x) / 100.0  # to m/s
 
     potentials = np.array([0.01, 10.0, 32.0, 100.0, 1000.0, 10000.0, 15000.0])
 
@@ -117,7 +123,7 @@ def peat_hydrol_properties(x, unit="g/cm3", var="bd", ptype="A"):
     for i, s in enumerate(np.transpose(wc)):
         try:
             vgen[i], _ = curve_fit(van_g, potentials, s, p0=vg_ini)
-        except:
+        except Exception:
             print(
                 "water retention parameters did not converge, Replaced with generic velues"
             )
@@ -330,7 +336,7 @@ def potential_peat_heterotrophic_respiration(T, sfc, V):
     )  # Parameters: Table 3 RTot
     TotCO2 = Rref * np.exp(B * (1.0 / (T5ref - T50) - 1.0 / (T - T50)))  # g m-2 h-1
     TotCO2 = TotCO2 / 1000.0 / 3600.0  # Conversion to kg m-2 s-1
-    O2 = TotCO2 / 1.375  # Conversion from CO2 to O2 with mole mass ratio
+    # O2 = TotCO2 / 1.375  # Conversion from CO2 to O2 with mole mass ratio
 
     # Computes momentary Heterotrophic CO2 flux as a function of soil temperature and peat bulk density
     Rref = (
@@ -541,7 +547,7 @@ def diff_nutrient_release(
     gr_response = []
     sfc = spara.sfc
     sfc_specification = spara.sfc_specification
-    sp = spara.species
+    # sp = spara.species
     N = {
         2: {1: 1.9, 2: 1.9},
         3: {1: 1.6, 2: 1.6},
@@ -611,7 +617,7 @@ def diff_nutrient_release(
     print("***************************************")
     print("Comparing scenarios:")
     comparisons = np.shape(co2release)[0]
-    vol_end = vol[0] + (yi[-1] - yi[0])
+    # vol_end = vol[0] + (yi[-1] - yi[0])
     for c in range(comparisons)[1:]:
         diff = co2release[c] - co2release[0]
         Nrel = (
@@ -688,13 +694,13 @@ def diff_nutrient_release(
 
         po = False
         if po:
-            fig = plt.figure(
+            _ = plt.figure(
                 num="Control vs" + spara.scenario_name[c],
                 facecolor=(232 / 255.0, 243 / 255.0, 245.0 / 255),
                 edgecolor="k",
                 figsize=(18.0, 12.0),
             )  # Figsize(w,h), tuple inches
-            ax = fig.add_axes([0.05, 0.5, 0.55, 0.46])  # left, bottom, width, height
+            # ax = fig.add_axes([0.05, 0.5, 0.55, 0.46])  # left, bottom, width, height
             plt.ylabel("stand volume")
             plt.plot(dates, vol, "k-")
             plt.plot(dates, vol + np.cumsum(diff) / sum(diff) * limiting, "r-")
@@ -837,6 +843,10 @@ def get_motti(ifile, return_spe=False):
         return df
 
 
+def marjo_bck(nut, lna, b, k):
+    return np.exp((np.log(nut) - lna - k) / b)
+
+
 def nut_to_vol(
     vol_ini,
     Nrel,
@@ -869,9 +879,6 @@ def nut_to_vol(
     littershare = (
         1.0 - gvshare
     ) / 2.0  # maximum share of nutrient supply allocated for litter
-
-    MarjoNut = lambda vol, lna, b, k: np.exp(lna + b * np.log(vol) + k)
-    MarjoBck = lambda nut, lna, b, k: np.exp((np.log(nut) - lna - k) / b)
 
     #'N':{'pine':[1.856,0.631,0.050]},
     #'P':{'pine':[-2.387,0.754,0.158]},
@@ -923,18 +930,18 @@ def nut_to_vol(
 
     # ******** Nutrients in the stand **************
     lna, b, k = par["N"][species]
-    Ns = MarjoNut(vol_ini, lna, b, k)
+    Ns = marjo_nut(vol_ini, lna, b, k)
     lna, b, k = par["P"][species]
-    Ps = MarjoNut(vol_ini, lna, b, k)
+    Ps = marjo_nut(vol_ini, lna, b, k)
     lna, b, k = par["K"][species]
-    Ks = MarjoNut(vol_ini, lna, b, k)
+    Ks = marjo_nut(vol_ini, lna, b, k)
 
     lna, b, k = par["N"][species]
-    volN = MarjoBck(Ns + Nrel - litterN - gvNup, lna, b, k)
+    volN = marjo_bck(Ns + Nrel - litterN - gvNup, lna, b, k)
     lna, b, k = par["P"][species]
-    volP = MarjoBck(Ps + Prel - litterP - gvPup, lna, b, k)
+    volP = marjo_bck(Ps + Prel - litterP - gvPup, lna, b, k)
     lna, b, k = par["K"][species]
-    volK = MarjoBck(Ks + Krel - litterK - gvKup, lna, b, k)
+    volK = marjo_bck(Ks + Krel - litterK - gvKup, lna, b, k)
 
     volN = np.maximum(volN, vol_ini)
     volP = np.maximum(volP, vol_ini)
@@ -943,21 +950,24 @@ def nut_to_vol(
     return volN, volP, volK
 
 
+def marjo_nut(vol, lna, b, k):
+    return np.exp(lna + b * np.log(vol) + k)
+
+
 def nutrient_demand(vol_ini, vol, litter_mass):
     # vol as list: start, end, leaf_mass kg/ha at the end, yrs is length of the study period
     # this is not in use
 
-    MarjoNut = lambda vol, lna, b, k: np.exp(lna + b * np.log(vol) + k)
     from_abovegr_to_total = 1.2
 
     litter_nut = {"N": 12.0, "P": 1.0, "K": 3.5}  # mg/g Laiho 1997 page 49
     # litter_nut={'N':6.9, 'P':0.81, 'K':2.81}      #mg/g Palviainen & Finer 2012
     retrans = {"N": 0.69, "P": 0.73, "K": 0.8}  # Nieminen Helmisaari 1996 Tree Phys
     # longevityLeaves = {'pine':4., 'spruce':5.} #yrs, Lamppu & Huttunen 2001 CJFR life span of leaves and fine roots
-    longevityLeaves = {
-        "pine": 3.0,
-        "spruce": 4.0,
-    }  # yrs, Lamppu & Huttunen 2001 CJFR life span of leaves and fine roots
+    # longevityLeaves = {
+    #     "pine": 3.0,
+    #     "spruce": 4.0,
+    # }  # yrs, Lamppu & Huttunen 2001 CJFR life span of leaves and fine roots
 
     par = {  # Palviainen & Finer, 2012 Eur J For Res 131:945-964, eq 2, Table 7
         "N": {"pine": [1.856, 0.631, 0.050]},
@@ -967,21 +977,21 @@ def nutrient_demand(vol_ini, vol, litter_mass):
 
     lna, b, k = par["N"]["pine"]  # pine
     N = (
-        MarjoNut(vol, lna, b, k) - MarjoNut(vol_ini, lna, b, k)
+        marjo_nut(vol, lna, b, k) - marjo_nut(vol_ini, lna, b, k)
     ) * from_abovegr_to_total + litter_mass * (1.0 - retrans["N"]) * litter_nut[
         "N"
     ] / 1000.0
 
     lna, b, k = par["P"]["pine"]  # pine
     P = (
-        MarjoNut(vol, lna, b, k) - MarjoNut(vol_ini, lna, b, k)
+        marjo_nut(vol, lna, b, k) - marjo_nut(vol_ini, lna, b, k)
     ) * from_abovegr_to_total + litter_mass * (1.0 - retrans["P"]) * litter_nut[
         "P"
     ] / 1000.0
 
     lna, b, k = par["K"]["pine"]  # pine
     K = (
-        MarjoNut(vol, lna, b, k) - MarjoNut(vol_ini, lna, b, k)
+        marjo_nut(vol, lna, b, k) - marjo_nut(vol_ini, lna, b, k)
     ) * from_abovegr_to_total + litter_mass * (1.0 - retrans["K"]) * litter_nut[
         "P"
     ] / 1000.0
@@ -1091,8 +1101,8 @@ def motti_development(spara, ifile):
         "Spruce": 7.25,
         "Birch": 14.0,
     }  # Härkönen et al. 2015 BER 20, 181-195
-    leaf = np.insert(df["leaves"].values / 10.0 * sla[spe], 0, 0.0)
-    ageToLAI = interp1d(x, leaf, fill_value=(leaf[0], leaf[-1]), bounds_error=False)
+    # leaf = np.insert(df["leaves"].values / 10.0 * sla[spe], 0, 0.0)
+    # ageToLAI = interp1d(x, leaf, fill_value=(leaf[0], leaf[-1]), bounds_error=False)
 
     yi = np.insert(df["yield"].values, 0, 0.0)
     ageToYield = interp1d(x, yi, fill_value=(yi[0], yi[-1]), bounds_error=False)
@@ -1146,9 +1156,9 @@ def motti_development(spara, ifile):
     bmToStems = interp1d(
         bm, stems, fill_value=(stems[0], stems[-1]), bounds_error=False
     )
-    ageToStems = interp1d(
-        x, stems, fill_value=(stems[0], stems[-1]), bounds_error=False
-    )
+    # ageToStems = interp1d(
+    #     x, stems, fill_value=(stems[0], stems[-1]), bounds_error=False
+    # )
 
     bmStemlike = (
         rho[spe] * df["yield"].values
@@ -1331,8 +1341,8 @@ def motti_development_old(spara, ifile):
         "Spruce": 7.25,
         "Birch": 14.0,
     }  # Härkönen et al. 2015 BER 20, 181-195
-    leaf = np.insert(df["leaves"].values / 10.0 * sla[spe], 0, 0.0)
-    ageToLAI = interp1d(x, leaf, fill_value=(leaf[0], leaf[-1]), bounds_error=False)
+    # leaf = np.insert(df["leaves"].values / 10.0 * sla[spe], 0, 0.0)
+    # ageToLAI = interp1d(x, leaf, fill_value=(leaf[0], leaf[-1]), bounds_error=False)
 
     yi = np.insert(df["yield"].values, 0, 0.0)
     ageToYield = interp1d(x, yi, fill_value=(yi[0], yi[-1]), bounds_error=False)
@@ -1386,9 +1396,9 @@ def motti_development_old(spara, ifile):
     bmToStems = interp1d(
         bm, stems, fill_value=(stems[0], stems[-1]), bounds_error=False
     )
-    ageToStems = interp1d(
-        x, stems, fill_value=(stems[0], stems[-1]), bounds_error=False
-    )
+    # ageToStems = interp1d(
+    #     x, stems, fill_value=(stems[0], stems[-1]), bounds_error=False
+    # )
 
     bmStemlike = (
         rho[spe] * df["yield"].values
@@ -2463,7 +2473,7 @@ def understory_uptake(
     litterfall_tot = (
         np.mean([litterfall_gv, litterfall_gv_end], axis=0) * simtime
     )  # total gv litterfall in the simulation time kg ha-1
-    gv_leafmass_mean = np.mean([gv_leafmass, gv_leafmass_end], axis=0)
+    # gv_leafmass_mean = np.mean([gv_leafmass, gv_leafmass_end], axis=0)
 
     """
     print ('    + Ground vegetation nutrient demand')
