@@ -8,38 +8,40 @@ For further details, keep on reading.
 
 ---
 
-# ✔  Summary: steps to contribute
-
-To contribute:
+# ✔  Process Summary
 
 0. Clone SUSI and install the dev environment
 1. Create a branch
 2. Modify the code in the new branch. (Write new tests, if possible!)
 3. Run tests
 4. Commit the changes to the new branch. `pre-commit` will run automatically and format the code
-4. Push your branch
-5. Open a Pull Request (PR)
-6. Continuous Integration (CI) will run in GitHub's servers
-7. We will review the PR
-8. If successful, we will merge it
+5. Push your branch
+6. Open a Pull Request (PR)
+7. Continuous Integration (CI) will run in GitHub's servers
+8. We will review the PR
+9. If successful, we will merge it
+10. Delete your branch
 
 ---
 
-# Install SUSI dev environment
-You only need to follow these steps once.
+# 📥 0. Install SUSI dev environment
 
 1. Clone the latest version of the code.
 ```bash
 git clone <repo-url>
 ```
-2. Navigate into the project folder and install the python environment.
+2. Navigate into the project folder and install the Python environment.
 ```bash
 uv sync
 ```
-(You need the [`uv`](https://docs.astral.sh/uv/getting-started/installation/)  python package and environment manager)
+(You need the [`uv`](https://docs.astral.sh/uv/getting-started/installation/)  Python package and environment manager)
 
+3. Activate the Python environment.
+```bash
+source .venv/bin/activate
+```
 
-3. Install the pre-commit hooks (more info on this below)
+4. Install the pre-commit hooks (more info on this below)
 ```bash
 pre-commit install
 ```
@@ -49,13 +51,14 @@ You're ready!
 
 ---
 
-# 🔀 Git Workflow: Feature/Branch
+# 🔀 1. Create a branch
 
+## Our Git Workflow: Feature/Branch
 * The `main` branch is **always stable**.
 * Every contribution occurs on a feature branch. This means that if you want to add or modify some code, you must create a new branch.
 * No commits go directly to `main`. Instead, Pull Requests are created so that every change to `main` is reviewable.
 
-## Branch naming conventions
+### Branch naming conventions
 
 ```
 feature/<short-description>
@@ -72,49 +75,37 @@ refactor/<scope>
 feature/add-simulation-runner
 bugfix/fix-numpy-shape-error
 ```
-
----
-
-# 📥 How to Start Working
-
-1. Create a branch from `main`:
-
+### How to create a branch
+1. Make sure you are in the `main` branch
 ```bash
-git switch main    # ensure you are in main
-git pull    # get latest version of the code
-git switch -c feature/my-feature    # create a new branch and switch to it
-```
-Now you can make the changes you want, this won't affect the `main` branch.
-
-
-
----
-
-# 🧹 pre-commit: Code Formatting Standards
-
-We enforce formatting, linting, import cleanup, and notebook hygiene via **pre-commit**.
-
-The tools we use are:
-* **ruff** - Code formatting and linting
-* **nbstripout** – Remove notebook outputs
-
-This means that before you run `git commit`, those tools below will review and attempt to format the code.
-If they can do the formatting automatically, they will.
-If they cannot, you will need to fix the errors manually.
-
-Your code **must** pass all checks before being pushed.
-
-
-Note that you can also run pre-commit manually:
-```bash
-pre-commit run --all-files
+git switch main
 ```
 
-This is configured in the `.pre-commit-config.yaml` file.
+2. Get the latest version of the code
+```bash
+git pull
+```
+
+3. Create the branch and switch to it
+```bash
+git switch -c feature/my-feature
+```
+Now you can make the changes you want.
+The changes will stay in your local machine until you `push` them.
+
+Since you have branched off of the `main` branch, your changes won't affect the main SUSI code directly, even if you push.
+For that to happen, we need to open a Pull Request (see below).
 
 ---
 
-# 🧪 Testing
+# 💱 2. Modify code
+
+You know how to do this!
+
+---
+
+# 🧪 3. Testing
+If you are adding features to the code, you would ideally write some tests for them.
 
 We use **pytest** for automated tests.
 Run tests locally:
@@ -133,18 +124,78 @@ All tests must pass before submitting a Pull Request.
 
 ---
 
-# 🔄 Pull Requests (PR)
+# 🧹 4. Commit and `pre-commit`
+## Add and Commit the changes in your branch
+
+You can add changes to the code by running
+```bash
+git add
+```
+And commit them with
+```bash
+git commit -m "<your commit message>"
+```
+
+## `pre-commit`: Automatic formating
+We enforce code formating, linting, import cleanup, and notebook hygiene via **pre-commit**.
+
+The tools we use are:
+* **ruff** - Code formatting and linting
+* **nbstripout** – Remove jupyter notebook outputs
+
+This means that before you run `git commit`, those tools below will run (locally) and attempt to format the code.
+If they can do the formatting automatically, they will.
+If there are any errors in the code, they will point them out.
+If they cannot format the code and/or fix the errors, you will need to fix them manually.
+
+Your code **must** pass all checks before being pushed.
+
+Note that you can also run pre-commit manually:
+```bash
+pre-commit run --all-files
+```
+
+This is configured in the `.pre-commit-config.yaml` file.
+
+
+---
+
+# ➡️ 5. Push the changes
+
+Run 
+```bash
+git push
+```
+If your local branch does not exist in the remote repository you will get a message suggesting you to do so.
+
+Run it:
+```bash
+git push --set-upstream origin <your-branch-name> 
+```
+And after this your branch will exist online too.
+
+Ultimately we want all good changes to be on the `main` branch, but you cannot modify it directly.
+For that, we need a Pull Request.
+
+---
+
+# 🔄 6. Pull Requests (PR)
 
 Every merge into `main` happens through a Pull Request.
 You cannot `push` directly to the `main` branch.
 
-### PR Requirements
+### Go to github.com and open a PR
+Be nice and write a PR that is:
+
+* Small, focused
+* Good title and description
+* Remember: ideally, tests are included for new functionality
+
+### PR Requirements for approval
 
 * All pre-commit checks pass
-* All CI checks pass
-* Small, focused PRs
-* Good title and description
-* Ideally, tests are included for new functionality
+* All CI checks pass (see section below)
+* One of the admins gives the OK
 
 ---
 
@@ -159,5 +210,20 @@ CI checks:
 If CI fails, the PR **cannot** be merged.
 
 This is configured in the `.github/workflows/ci.yaml` file.
+
+
+# 🗑️ 10. Delete your branch
+
+First, switch to the `main` branch:
+
+```bash
+git switch main
+```
+
+Then, delete your branch
+
+```bash
+git branch -d <your-branch>
+```
 
 
