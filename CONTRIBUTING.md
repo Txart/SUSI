@@ -18,9 +18,8 @@ For further details, keep on reading.
 5. Push your branch
 6. Open a Pull Request (PR)
 7. Continuous Integration (CI) will run in GitHub's servers
-8. We will review the PR
-9. If successful, we will merge it
-10. Delete your branch
+8. We will review the PR. If successful, we will merge it
+9. Delete your branch
 
 ---
 
@@ -199,7 +198,7 @@ Be nice and write a PR that is:
 
 ---
 
-# 🚀 CI (GitHub Actions)
+# 🚀 7. CI (GitHub Actions)
 
 Continuous Integration (CI) runs automatically on Pull Requests and on pushes to `main`.
 CI checks:
@@ -211,8 +210,16 @@ If CI fails, the PR **cannot** be merged.
 
 This is configured in the `.github/workflows/ci.yaml` file.
 
+---
+# 🕵️‍♀️ 8. PR code review
 
-# 🗑️ 10. Delete your branch
+We will review your code.
+
+At least 1 admin needs to approve it.
+
+---
+
+# 🗑️ 9. Delete your branch
 
 First, switch to the `main` branch:
 
