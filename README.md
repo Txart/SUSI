@@ -13,3 +13,5 @@ But they will be installed when you run the application anyways:
 ```bash
 uv run <command_name>
 ```
+
+I hate this tutorial!
