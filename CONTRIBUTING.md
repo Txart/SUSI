@@ -8,33 +8,54 @@ For further details, keep on reading.
 
 ---
 
-# ✔ Summary
+# ✔  Summary: steps to contribute
 
 To contribute:
 
-1. Create a feature branch
-2. Install and use pre-commit
-3. Write & run tests
+0. Clone SUSI and install the dev environment
+1. Create a branch
+2. Modify the code in the new branch. (Write new tests, if possible!)
+3. Run tests
+4. Commit the changes to the new branch. `pre-commit` will run automatically and format the code
 4. Push your branch
-5. Open a Pull Request
-6. Pass review + CI
-7. Merge
+5. Open a Pull Request (PR)
+6. Continuous Integration (CI) will run in GitHub's servers
+7. We will review the PR
+8. If successful, we will merge it
 
 ---
 
-# Install SUSI
-See `README.md`
+# Install SUSI dev environment
+You only need to follow these steps once.
 
+1. Clone the latest version of the code.
+```bash
+git clone <repo-url>
+```
+2. Navigate into the project folder and install the python environment.
+```bash
+uv sync
+```
+(You need the [`uv`](https://docs.astral.sh/uv/getting-started/installation/)  python package and environment manager)
+
+
+3. Install the pre-commit hooks (more info on this below)
+```bash
+pre-commit install
+```
+You're ready!
+
+(Tip: Since we use **[ruff](https://docs.astral.sh/ruff/)** to format the code, you might consider installng it in your favourite IDE for a better developer experience.)
 
 ---
 
 # 🔀 Git Workflow: Feature/Branch
 
 * The `main` branch is **always stable**.
-* Every contribution occurs on a feature branch. Which means that if you want to add a feature, you must create a new branch.
+* Every contribution occurs on a feature branch. This means that if you want to add or modify some code, you must create a new branch.
 * No commits go directly to `main`. Instead, Pull Requests are created so that every change to `main` is reviewable.
 
-## Branch naming
+## Branch naming conventions
 
 ```
 feature/<short-description>
@@ -65,11 +86,7 @@ git switch -c feature/my-feature    # create a new branch and switch to it
 ```
 Now you can make the changes you want, this won't affect the `main` branch.
 
-2. Install pre-commit hooks:
 
-```bash
-pre-commit install
-```
 
 ---
 
@@ -80,8 +97,6 @@ We enforce formatting, linting, import cleanup, and notebook hygiene via **pre-c
 The tools we use are:
 * **ruff** - Code formatting and linting
 * **nbstripout** – Remove notebook outputs
-
-(Note: For a better developer experience, install **ruff** in your favourite IDE.)
 
 This means that before you run `git commit`, those tools below will review and attempt to format the code.
 If they can do the formatting automatically, they will.
@@ -113,12 +128,12 @@ Or, if your `venv` is activated:
 pytest
 ```
 
-All tests must pass before submitting a PR.
+All tests must pass before submitting a Pull Request.
 (This is enforced automatically by the CI with GitHub Actions, see below).
 
 ---
 
-# 🔄 Pull Requests
+# 🔄 Pull Requests (PR)
 
 Every merge into `main` happens through a Pull Request.
 You cannot `push` directly to the `main` branch.
@@ -129,7 +144,7 @@ You cannot `push` directly to the `main` branch.
 * All CI checks pass
 * Small, focused PRs
 * Good title and description
-* Tests are included for new functionality
+* Ideally, tests are included for new functionality
 
 ---
 

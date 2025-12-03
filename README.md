@@ -1,6 +1,6 @@
 # Install SUSI
 
-We use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to set the directory and manage packages.
+We use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to set the environment and manage packages.
 
 You can run:
 
