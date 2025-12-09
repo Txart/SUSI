@@ -80,7 +80,7 @@ susi.run_susi(
     mottifile=mottifile,
     peat="other",
     photosite="All data",
-    folderName=str(app_structure.output_folder) + "/",
+    folderName=str(metadata.experiment_folder_path) + "/",
     ageSim=golden_test.PARAMETERS.simulation_parameters.age,
     sarkaSim=golden_test.PARAMETERS.simulation_parameters.L,
     sfc=golden_test.PARAMETERS.simulation_parameters.sfc,

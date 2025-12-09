@@ -16,8 +16,12 @@ def get_project_root() -> Path:
     raise FileNotFoundError("Could not find project root")
 
 
+def datetime_format() -> str:
+    return "%Y-%m-%d_%H:%M:%S"
+
+
 def generate_current_datetime_stamp() -> str:
-    return datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+    return datetime.now().strftime(datetime_format())
 
 
 def random_id_generator(size) -> str:

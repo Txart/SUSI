@@ -43,7 +43,7 @@ class MetaData(BaseModel):
         description="Final timestamp, recorded when the metadata dumping is done.",
     )
 
-    git_commit: str = Field(
+    git_commit_hash: str = Field(
         init=False,
         default=io_utils.get_git_revision_short_hash(),
         description="Git commit identifier.",

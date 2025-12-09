@@ -109,13 +109,13 @@ def peat_hydrol_properties(x, unit="g/cm3", var="bd", ptype="A"):
     wc = (
         np.array(
             [
-                wcont(x, *prs["pF0"]),
+                wcont(x, prs["pF0"]),
                 pF1(x),
-                wcont(x, *prs["pF1.5"]),
-                wcont(x, *prs["pF2"]),
-                wcont(x, *prs["pF3"]),
-                wcont(x, *prs["pF4"]),
-                wcont(x, *prs["pF4.2"]),
+                wcont(x, prs["pF1.5"]),
+                wcont(x, prs["pF2"]),
+                wcont(x, prs["pF3"]),
+                wcont(x, prs["pF4"]),
+                wcont(x, prs["pF4.2"]),
             ]
         )
     ) / 100.0
@@ -130,7 +130,7 @@ def peat_hydrol_properties(x, unit="g/cm3", var="bd", ptype="A"):
             vgen[i] = np.array([0.88, 0.09, 0.03, 1.3])  # van Genuchten parameters
 
     for i, a, pt in zip(range(len(x)), x, ptype):
-        Ksat[i] = K(a, *Kpara[var][pt])  # hydraulic conductivity (cm/s -> m/s)
+        Ksat[i] = K(a, Kpara[var][pt])  # hydraulic conductivity (cm/s -> m/s)
 
     return vgen, Ksat
 
