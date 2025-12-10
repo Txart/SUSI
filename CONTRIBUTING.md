@@ -50,7 +50,18 @@ You're ready!
 
 ---
 
-# 🔀 1. Create a branch
+# ➡️ 1. Always pull
+Run
+
+```bash
+git pull
+```
+to ensure you have the latest version of the model.
+
+Tip: get used to do this often. You never know when someone has changed the original code.
+
+
+# 🔀 2. Create a branch
 
 ## Our Git Workflow: Feature/Branch
 * The `main` branch is **always stable**.
@@ -97,13 +108,13 @@ For that to happen, we need to open a Pull Request (see below).
 
 ---
 
-# 💱 2. Modify code
+# 💱 3. Modify code
 
 You know how to do this!
 
 ---
 
-# 🧪 3. Testing
+# 🧪 4. Testing
 If you are adding features to the code, you would ideally write some tests for them.
 
 We use **pytest** for automated tests.
@@ -159,7 +170,7 @@ This is configured in the `.pre-commit-config.yaml` file.
 
 ---
 
-# ➡️ 5. Push the changes
+# ➡️ 6. Push the changes
 
 Run 
 ```bash
@@ -178,7 +189,7 @@ For that, we need a Pull Request.
 
 ---
 
-# 🔄 6. Pull Requests (PR)
+# 🔄 7. Pull Requests (PR)
 
 Every merge into `main` happens through a Pull Request.
 You cannot `push` directly to the `main` branch.
@@ -198,7 +209,7 @@ Be nice and write a PR that is:
 
 ---
 
-# 🚀 7. CI (GitHub Actions)
+# 🚀 8. CI (GitHub Actions)
 
 Continuous Integration (CI) runs automatically on Pull Requests and on pushes to `main`.
 CI checks:
@@ -211,7 +222,7 @@ If CI fails, the PR **cannot** be merged.
 This is configured in the `.github/workflows/ci.yaml` file.
 
 ---
-# 🕵️‍♀️ 8. PR code review
+# 🕵️‍♀️ 9. PR code review
 
 We will review your code.
 
@@ -219,7 +230,7 @@ At least 1 admin needs to approve it.
 
 ---
 
-# 🗑️ 9. Delete your branch
+# 🗑️ 10. Delete your branch
 
 First, switch to the `main` branch:
 
