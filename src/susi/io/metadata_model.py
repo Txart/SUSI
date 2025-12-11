@@ -17,7 +17,9 @@ class MetaData(BaseModel):
 
     metadata_schema_version: int = 1
 
-    weather_data_path: FilePath = io_utils.get_project_root() / Path("inputs/CFw.csv")
+    weather_data_path: FilePath = io_utils.get_project_root() / Path(
+        "src/inputs/CFw.csv"
+    )
 
     experiment_folder_path: Path = Field(
         init=False,

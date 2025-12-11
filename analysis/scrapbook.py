@@ -63,6 +63,7 @@ df = load_all_metadatas()
 # Query and filer and stuff...
 df[df["photo_parameters.alfa"] > 0]
 
+
 # Then make some functions to pass the filtered df and get the (lazy loaded) netcdf data.
 
 # %% Read ncdf data

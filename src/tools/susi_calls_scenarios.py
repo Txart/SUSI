@@ -11,7 +11,7 @@ import numpy as np
 
 from susi.core.susi_main import Susi
 from susi.core.susi_utils import read_FMI_weather
-from susi.io.parameters.develop_scens import Params
+from susi.io.parameter_model import Params
 from susi.io.susi_para import get_susi_para
 
 stands = [
