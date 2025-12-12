@@ -1,8 +1,8 @@
 import datetime
 import numpy as np
 
-from susi.io.simulation_configuration_model import SimulationConfig, SimulationRun
-from susi.io.metadata_model import MetaData
+from susi.io.simulation_configuration_model import ExecutionConfig, SimulationParams
+from susi.io.metadata_model import SimulationMetaData
 from susi.io.susi_parameter_model import (
     CanopyParameters,
     FertilizationParameters,
@@ -11,7 +11,7 @@ from susi.io.susi_parameter_model import (
     OrganicLayerParameters,
     OutputParameters,
     SusiParams,
-    SimulationParameters,
+    ExtraParameters,
     TreeSpecies,
     get_photo_parameters_by_location,
     h_mor_from_drainage_and_mass_mor_Pitkanen,
@@ -20,7 +20,7 @@ from susi.io.susi_parameter_model import (
 
 # %% call
 
-simulation_config = SimulationConfig(
+simulation_config = ExecutionConfig(
     n_runs=5,
     random_seed=42,
     n_parallel_processes=1,
@@ -31,7 +31,7 @@ rng = np.random.default_rng(seed=simulation_config.random_seed)
 
 for i in range(simulation_config.n_runs):
     simulation_config.add_run(
-        SimulationRun(
+        SimulationParams(
             susi_params=SusiParams(
                 canopy_parameters=CanopyParameters(),
                 organic_layer_parameters=OrganicLayerParameters(),
@@ -39,7 +39,7 @@ for i in range(simulation_config.n_runs):
                     location=LocationsForPhotoParams("All_data")
                 ),
                 output_parameters=OutputParameters(),
-                simulation_parameters=SimulationParameters(
+                extra_parameters=ExtraParameters(
                     start_date=datetime.datetime(2004, 1, 1),
                     end_date=datetime.datetime(2020, 12, 31),
                     L=40.0,
@@ -105,7 +105,7 @@ for i in range(simulation_config.n_runs):
                     ),
                 ),
             ),
-            metadata=MetaData(),
+            simulation_metadata=SimulationMetaData(),
         )
     )
 simulation_config.check_for_duplicated_params()

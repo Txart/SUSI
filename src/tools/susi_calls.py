@@ -5,16 +5,17 @@ Created on 17 Nov 2025
 @author: alauren, txart
 """
 
+from susi.io.simulation_configuration_model import SimulationParams
 import susi.io.utils as io_utils
 from susi.core.susi_main import Susi
 from susi.core.susi_utils import read_FMI_weather
 from susi.io.app_structure import AppStructure
-from susi.io.metadata_model import MetaData
+from susi.io.metadata_model import SimulationMetaData
 from inputs.parameters import golden_test
 
 # ***************** local call for SUSI*****************************************************
 
-metadata = MetaData()
+metadata = SimulationMetaData()
 app_structure = AppStructure()
 
 # mottifile, dict of dicts, telling the growth and yield (Motti files) in each canopy layer with key pointing to integer in the canopylayer dict
@@ -44,18 +45,20 @@ wpara = wpara["undefined"]
 
 susi = Susi()  # Initaiate susi class
 
+golden_parameters = golden_test.PARAMETERS
+
+
+simulation_parameters = SimulationParams(
+    simulation_metadata=metadata, susi_params=golden_parameters
+)
+
 forc = read_FMI_weather(
     0,
-    golden_test.PARAMETERS.simulation_parameters.start_date,
-    golden_test.PARAMETERS.simulation_parameters.end_date,
+    golden_parameters.extra_parameters.start_date,
+    golden_parameters.extra_parameters.end_date,
     sourcefile=metadata.weather_data_path,
 )  # read weather input
 
-cpara = golden_test.PARAMETERS.canopy_parameters
-org_para = golden_test.PARAMETERS.organic_layer_parameters
-spara = golden_test.PARAMETERS.simulation_parameters
-photopara = golden_test.PARAMETERS.photo_parameters
-outpara = golden_test.PARAMETERS.output_parameters
 
 # Create output folder
 io_utils.create_folder(path=metadata.experiment_folder_path)
@@ -67,21 +70,17 @@ golden_test.PARAMETERS.dump_json_to_file(
 metadata.dump_json_to_file()
 
 susi.run_susi(
-    forc,
-    wpara,
-    cpara,
-    org_para,
-    spara,
-    outpara,
-    photopara,
-    start_yr=golden_test.PARAMETERS.simulation_parameters.start_date.year,
-    end_yr=golden_test.PARAMETERS.simulation_parameters.end_date.year,
+    forc=forc,
+    wpara=wpara,
+    simulation_params=simulation_parameters,
+    start_yr=golden_test.PARAMETERS.extra_parameters.start_date.year,
+    end_yr=golden_test.PARAMETERS.extra_parameters.end_date.year,
     wlocation="undefined",
     mottifile=mottifile,
     peat="other",
     photosite="All data",
     folderName=str(metadata.experiment_folder_path) + "/",
-    ageSim=golden_test.PARAMETERS.simulation_parameters.age,
-    sarkaSim=golden_test.PARAMETERS.simulation_parameters.L,
-    sfc=golden_test.PARAMETERS.simulation_parameters.sfc,
+    ageSim=golden_test.PARAMETERS.extra_parameters.age,
+    sarkaSim=golden_test.PARAMETERS.extra_parameters.L,
+    sfc=golden_test.PARAMETERS.extra_parameters.sfc,
 )  # Run susi

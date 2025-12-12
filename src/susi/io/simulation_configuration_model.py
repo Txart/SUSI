@@ -5,16 +5,27 @@ import json
 
 
 from susi.io.extra_pydantic_types import PositiveInt
-from susi.io.metadata_model import MetaData
+from susi.io.metadata_model import SimulationMetaData
 from susi.io.susi_parameter_model import SusiParams
 
 
-class SimulationRun(BaseModel):
+class SimulationParams(BaseModel):
+    """
+    Fully specifies the parameters needed for a single SUSI simulation.
+    Contains SUSI parameters and metadata associated with each simulation.
+    """
+
     susi_params: SusiParams
-    metadata: MetaData
+    simulation_metadata: SimulationMetaData
 
 
-class SimulationConfig(BaseModel):
+class ExecutionConfig(BaseModel):
+    """
+    Highest abstraction layer for the input parameters.
+
+    Enables the creation of multiple SUSI simulations.
+    """
+
     n_runs: PositiveInt = Field(description="Number of total SUSI runs.")
     n_parallel_processes: PositiveInt = Field(
         default=1,
@@ -24,7 +35,7 @@ class SimulationConfig(BaseModel):
         default=None,
         description="Random seed for deterministic random number generation in parameter sampling. Required if n_runs>1.",
     )
-    runs: list[SimulationRun] = Field(
+    runs: list[SimulationParams] = Field(
         default=[],
         description="A list of parameters fully specifying each run. It must have 'n_runs' number of elements. E.g., if only runing 1 simulation, 'n_runs'=1, and the length of the 'runs' list must be 1.",
     )
@@ -46,7 +57,7 @@ class SimulationConfig(BaseModel):
             )
         return self
 
-    def add_run(self, simulation_run: SimulationRun) -> None:
+    def add_run(self, simulation_run: SimulationParams) -> None:
         """Add a simulation run"""
         self.runs.append(simulation_run)
 

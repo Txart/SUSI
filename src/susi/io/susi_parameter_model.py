@@ -297,7 +297,7 @@ class FertilizationParameters(StrictFrozenModel):
     pH_increment: NonNegativeFloat = 1.0
 
 
-class SimulationParameters(
+class ExtraParameters(
     StrictFrozenModel,
     arbitrary_types_allowed=True,  # This allows numpy arrays and other types which do not have built-in validation in Pydantic
 ):
@@ -409,7 +409,7 @@ class SimulationParameters(
 
 class SusiParams(StrictFrozenModel):
     params_schema_version: int = 1
-    simulation_parameters: SimulationParameters
+    extra_parameters: ExtraParameters
     canopy_parameters: CanopyParameters
     organic_layer_parameters: OrganicLayerParameters
     photo_parameters: PhotoParameters

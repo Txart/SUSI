@@ -8,7 +8,7 @@ from susi.io.susi_parameter_model import (
     OrganicLayerParameters,
     OutputParameters,
     SusiParams,
-    SimulationParameters,
+    ExtraParameters,
     TreeSpecies,
     get_photo_parameters_by_location,
     h_mor_from_drainage_and_mass_mor_Pitkanen,
@@ -21,7 +21,7 @@ PARAMETERS = SusiParams(
         location=LocationsForPhotoParams("All_data")
     ),
     output_parameters=OutputParameters(),
-    simulation_parameters=SimulationParameters(
+    extra_parameters=ExtraParameters(
         start_date=datetime.datetime(2004, 1, 1),
         end_date=datetime.datetime(2020, 12, 31),
         L=40.0,
