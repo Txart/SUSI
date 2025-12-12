@@ -1,167 +1,109 @@
 import pytest
+import datetime
 
-from susi.io import plan_parameters as pp
+from susi.io.simulation_configuration_model import SimulationConfig, SimulationRun
+from susi.io.metadata_model import MetaData
+from susi.io.susi_parameter_model import (
+    CanopyParameters,
+    FertilizationParameters,
+    LocationsForPhotoParams,
+    NutrientFertilizationParameters,
+    OrganicLayerParameters,
+    OutputParameters,
+    SusiParams,
+    SimulationParameters,
+    TreeSpecies,
+    get_photo_parameters_by_location,
+    h_mor_from_drainage_and_mass_mor_Pitkanen,
+)
 
 
-def test_plan_models():
-    """Comprehensive test suite for plan_models function."""
-    from pydantic import BaseModel, Field
-
-    # Test Models
-    class GroupA(BaseModel):
-        parameterB: str = "a"
-        parameterC: int = 10
-
-    class MyModel(BaseModel):
-        learning_rate: float = 0.01
-        batch_size: int = 32
-        groupA: GroupA = Field(default_factory=GroupA)
-
-    # Test Basic functionality
-    base = MyModel()
-    models = pp.plan_models(
-        default_model=base,
-        set_values={"learning_rate": [0.1, 0.2, 0.3], "batch_size": [64, 128, 256]},
+def test_duplicate_models():
+    N_RUNS = 2
+    simulation_config = SimulationConfig(
+        n_runs=N_RUNS,
+        random_seed=42,
+        n_parallel_processes=1,
     )
-    assert len(models) == 3
-    assert models[0].learning_rate == 0.1 and models[0].batch_size == 64
-    assert models[1].learning_rate == 0.2 and models[1].batch_size == 128
-    assert models[2].learning_rate == 0.3 and models[2].batch_size == 256
 
-    # Test  Nested attributes
-    models = pp.plan_models(
-        default_model=base,
-        set_values={"learning_rate": [0.1, 0.2], "groupA.parameterB": ["b", "c"]},
-    )
-    assert models[0].groupA.parameterB == "b"
-    assert models[1].groupA.parameterB == "c"
-    assert models[0].groupA.parameterC == 10  # unchanged
-
-    # Test  Empty set_values
-    with pytest.raises(ValueError):
-        models = pp.plan_models(default_model=base, set_values={})
-
-    # Test  None set_values
-    with pytest.raises(ValueError):
-        models = pp.plan_models(default_model=base, set_values=None)
-
-    # Test  Single attribute change
-    models = pp.plan_models(
-        default_model=base, set_values={"learning_rate": [0.5, 0.6]}
-    )
-    assert len(models) == 2
-    assert models[0].batch_size == 32  # unchanged default
-
-    # Test  Mismatched lengths (should raise ValueError)
-    with pytest.raises(ValueError):
-        pp.plan_models(
-            default_model=base,
-            set_values={
-                "learning_rate": [0.1, 0.2],
-                "batch_size": [64, 128, 256],  # Different length!
-            },
+    for _ in range(simulation_config.n_runs):
+        simulation = SimulationRun(
+            susi_params=SusiParams(
+                canopy_parameters=CanopyParameters(),
+                organic_layer_parameters=OrganicLayerParameters(),
+                photo_parameters=get_photo_parameters_by_location(
+                    location=LocationsForPhotoParams("All_data")
+                ),
+                output_parameters=OutputParameters(),
+                simulation_parameters=SimulationParameters(
+                    start_date=datetime.datetime(2004, 1, 1),
+                    end_date=datetime.datetime(2020, 12, 31),
+                    L=40.0,
+                    initial_dominant_stand_age_years=100.0,
+                    initial_subdominant_stand_age_years=0.0,
+                    initial_understorey_age_years=0.0,
+                    site_fertility_class=4,
+                    sitename="susirun",
+                    species=TreeSpecies("Pine"),
+                    sfc_specification=1,
+                    hdom=None,
+                    vol=None,
+                    smc="Peatland",
+                    nLyrs=60,
+                    dzLyr=0.05,
+                    ditch_depth_west=[-0.5],
+                    ditch_depth_east=[-0.5],
+                    ditch_depth_20y_west=[
+                        -0.5
+                    ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
+                    ditch_depth_20y_east=[
+                        -0.5
+                    ],  # ojan syvyys 20 vuotta simuloinnin aloituksesta
+                    scenario_name=["D60"],  # kasvunlisaykset
+                    drain_age=100,
+                    initial_h=-0.2,
+                    slope=0.0,
+                    peat_type=["A", "A", "A", "A", "A", "A", "A", "A"],
+                    peat_type_bottom=["A"],
+                    anisotropy=10.0,
+                    vonP=True,
+                    vonP_top=[2, 2, 2, 3, 4, 5, 6, 6],
+                    vonP_bottom=8,
+                    bd_top=None,
+                    bd_bottom=0.16,
+                    peatN=None,
+                    peatP=None,
+                    peatK=None,
+                    enable_peattop=True,
+                    enable_peatmiddle=True,
+                    enable_peatbottom=True,
+                    rho_mor=80.0,  # bulk density of mor layer, kg m-3
+                    h_mor=h_mor_from_drainage_and_mass_mor_Pitkanen,
+                    cutting_yr=2001,  # year for cutting
+                    cutting_to_ba=12,  # basal area after cutting, m2/ha
+                    depoN=4.0,
+                    depoP=0.1,
+                    depoK=1.0,
+                    fertilization=FertilizationParameters(
+                        application_year=2201,
+                        N=NutrientFertilizationParameters(
+                            dose=0.0,
+                            decay_k=0.5,
+                            eff=1.0,
+                        ),  # fertilization dose in kg ha-1, decay_k in yr-1
+                        P=NutrientFertilizationParameters(
+                            dose=45.0, decay_k=0.2, eff=1.0
+                        ),
+                        K=NutrientFertilizationParameters(
+                            dose=100.0, decay_k=0.3, eff=1.0
+                        ),
+                        pH_increment=1.0,
+                    ),
+                ),
+            ),
+            metadata=MetaData(),
         )
+        simulation_config.add_run(simulation)
 
-    # Test  Invalid attribute path (should raise KeyError)
-    with pytest.raises(KeyError):
-        pp.plan_models(default_model=base, set_values={"nonexistent_field": [1, 2]})
-        assert False, "Should have raised KeyError"
-
-    # Test Invalid nested path (should raise KeyError)
-    with pytest.raises(KeyError):
-        pp.plan_models(default_model=base, set_values={"groupA.nonexistent": [1, 2]})
-
-    # Test Type validation (should raise ValidationError)
-    with pytest.raises(Exception):
-        pp.plan_models(
-            default_model=base, set_values={"learning_rate": ["not_a_number", 0.2]}
-        )
-
-    # Test Deep copy verification (ensure no shared references)
-    models = pp.plan_models(
-        default_model=base, set_values={"groupA.parameterB": ["x", "y"]}
-    )
-    models[0].groupA.parameterC = 999
-    assert models[1].groupA.parameterC == 10  # Should not be affected
-
-    # Test Tuples and other sequences
-    models = pp.plan_models(
-        default_model=base,
-        set_values={"learning_rate": (0.1, 0.2)},  # Tuple instead of list
-    )
-    assert len(models) == 2
-
-
-def test_set_nested_value():
-    # Test  Simple single-level path
-    data = {"name": "Alice", "age": 30}
-    pp._set_nested_value(data, "name", "Bob")
-    assert data["name"] == "Bob"
-    assert data["age"] == 30  # unchanged
-
-    # Test  Two-level nested path
-    data = {"user": {"name": "Alice", "age": 30}}
-    pp._set_nested_value(data, "user.name", "Bob")
-    assert data["user"]["name"] == "Bob"
-    assert data["user"]["age"] == 30
-
-    # Test  Deep nested path (3+ levels)
-    data = {"company": {"department": {"team": {"lead": "Alice"}}}}
-    pp._set_nested_value(data, "company.department.team.lead", "Bob")
-    assert data["company"]["department"]["team"]["lead"] == "Bob"
-
-    # Test  Setting different value types
-    data = {"a": 1, "b": {"c": "string"}}
-    pp._set_nested_value(data, "a", [1, 2, 3])
-    pp._set_nested_value(data, "b.c", {"nested": "dict"})
-    assert data["a"] == [1, 2, 3]
-    assert data["b"]["c"] == {"nested": "dict"}
-
-    # Test  Invalid top-level key
-    data = {"name": "Alice"}
-    with pytest.raises(KeyError):
-        pp._set_nested_value(data, "nonexistent", "value")
-
-    # Test  Invalid nested key
-    data = {"user": {"name": "Alice"}}
-    with pytest.raises(KeyError):
-        pp._set_nested_value(data, "user.nonexistent", "value")
-
-    # Test  Invalid intermediate key
-    data = {"user": {"name": "Alice"}}
-    with pytest.raises(KeyError):
-        pp._set_nested_value(data, "user.settings.theme", "dark")
-
-    # Test  Non-dict intermediate value
-    data = {"user": {"name": "Alice", "age": 30}}
-    with pytest.raises(TypeError):
-        pp._set_nested_value(data, "user.age.something", "value")
-
-    # Test  Empty path
-    data = {"name": "Alice"}
-    with pytest.raises(KeyError):
-        pp._set_nested_value(data, "", "value")
-
-    # Test  Non-string path
-    data = {"name": "Alice"}
-    with pytest.raises(Exception):
-        pp._set_nested_value(data, 123, "value")  # type: ignore
-
-    # Test  Path with empty key after split
-    data = {"name": "Alice"}
-    with pytest.raises(Exception):
-        pp._set_nested_value(data, "name.", "value")
-
-    # Test  Overwriting with None
-    data = {"user": {"name": "Alice"}}
-    pp._set_nested_value(data, "user.name", None)
-    assert data["user"]["name"] is None
-
-    # Test  Multiple operations on same dict
-    data = {"config": {"a": 1, "b": 2, "nested": {"c": 3}}}
-    pp._set_nested_value(data, "config.a", 10)
-    pp._set_nested_value(data, "config.b", 20)
-    pp._set_nested_value(data, "config.nested.c", 30)
-    assert data["config"]["a"] == 10
-    assert data["config"]["b"] == 20
-    assert data["config"]["nested"]["c"] == 30
+    with pytest.raises(ValueError):
+        simulation_config.check_for_duplicated_params()

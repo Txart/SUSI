@@ -1,0 +1,71 @@
+from typing import Optional
+from typing_extensions import Self
+from pydantic import BaseModel, Field, model_validator
+import json
+
+
+from susi.io.extra_pydantic_types import PositiveInt
+from susi.io.metadata_model import MetaData
+from susi.io.susi_parameter_model import SusiParams
+
+
+class SimulationRun(BaseModel):
+    susi_params: SusiParams
+    metadata: MetaData
+
+
+class SimulationConfig(BaseModel):
+    n_runs: PositiveInt = Field(description="Number of total SUSI runs.")
+    n_parallel_processes: PositiveInt = Field(
+        default=1,
+        description="Number of parallel processes to spawn. Cannot be greater than n_runs.",
+    )
+    random_seed: Optional[PositiveInt] = Field(
+        default=None,
+        description="Random seed for deterministic random number generation in parameter sampling. Required if n_runs>1.",
+    )
+    runs: list[SimulationRun] = Field(
+        default=[],
+        description="A list of parameters fully specifying each run. It must have 'n_runs' number of elements. E.g., if only runing 1 simulation, 'n_runs'=1, and the length of the 'runs' list must be 1.",
+    )
+
+    @model_validator(mode="after")
+    def check_multiple_or_single_run(self) -> Self:
+        if self.n_runs > 1:
+            if self.random_seed is None:
+                raise ValueError(
+                    "'random_seed' is required when 'n_runs' is greater than 1."
+                )
+        return self
+
+    @model_validator(mode="after")
+    def check_not_more_processes_than_runs(self) -> Self:
+        if self.n_parallel_processes > self.n_runs:
+            raise ValueError(
+                "'n_parallel_processes' cannot be greater than 'n_runs'. There must be at most one process per run."
+            )
+        return self
+
+    def add_run(self, simulation_run: SimulationRun) -> None:
+        """Add a simulation run"""
+        self.runs.append(simulation_run)
+
+        return None
+
+    def check_for_duplicated_params(self) -> None:
+        """
+        We don't want to run two simulations with exactly the same parameters.
+        This function checks for SUSI parameter duplicates in the list of runs.
+        """
+        seen = set()
+
+        for simulation_run in self.runs:
+            # Convert to JSON string for hashing (handles nested structures)
+            serialized = json.dumps(
+                simulation_run.susi_params.model_dump(), sort_keys=True
+            )
+
+            if serialized in seen:
+                raise ValueError("Duplicate Susi Parameter models detected.")
+            seen.add(serialized)
+        return None

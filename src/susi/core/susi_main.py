@@ -29,7 +29,7 @@ from susi.core.susi_utils import (
     rew_drylimit,
 )
 from susi.core.temperature import PeatTemperature
-from susi.io.parameter_model import (
+from susi.io.susi_parameter_model import (
     CanopyStateParametersArray,
     OrganicLayerParametersArray,
 )
