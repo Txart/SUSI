@@ -1,26 +1,26 @@
 import datetime
 
-from susi.io.parameter_model import (
+from susi.io.susi_parameter_model import (
     CanopyParameters,
     FertilizationParameters,
     LocationsForPhotoParams,
     NutrientFertilizationParameters,
     OrganicLayerParameters,
     OutputParameters,
-    Params,
-    SimulationParameters,
+    SusiParams,
+    ExtraParameters,
     TreeSpecies,
     get_photo_parameters_by_location,
 )
 
-PARAMETERS = Params(
+PARAMETERS = SusiParams(
     canopy_parameters=CanopyParameters(),
     organic_layer_parameters=OrganicLayerParameters(),
     photo_parameters=get_photo_parameters_by_location(
         location=LocationsForPhotoParams("All_data")
     ),
     output_parameters=OutputParameters(),
-    simulation_parameters=SimulationParameters(
+    extra_parameters=ExtraParameters(
         start_date=datetime.datetime(2004, 1, 1),
         end_date=datetime.datetime(2005, 12, 31),
         L=40.0,

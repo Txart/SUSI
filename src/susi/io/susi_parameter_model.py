@@ -1,7 +1,7 @@
 import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Annotated, Callable
+from typing import Callable
 
 import numpy as np
 from pydantic import (
@@ -15,6 +15,11 @@ from pydantic import (
 )
 
 from susi.io.app_structure import AppStructure
+from susi.io.extra_pydantic_types import (
+    PositiveFloat,
+    NonNegativeFloat,
+    NonPositiveFloat,
+)
 from susi.io.utils import get_project_root
 
 app_structure = AppStructure()
@@ -29,11 +34,6 @@ def h_mor_from_drainage_and_mass_mor_Pitkanen(
     drain_age: float, rho_mor: float
 ) -> float:
     return mass_mor_from_drainage_Pitkanen(drain_age) / rho_mor
-
-
-PositiveFloat = Annotated[float, Field(gt=0)]
-NonNegativeFloat = Annotated[float, Field(ge=0)]
-NonPositiveFloat = Annotated[float, Field(le=0)]
 
 
 class StrictFrozenModel(BaseModel):
@@ -297,7 +297,7 @@ class FertilizationParameters(StrictFrozenModel):
     pH_increment: NonNegativeFloat = 1.0
 
 
-class SimulationParameters(
+class ExtraParameters(
     StrictFrozenModel,
     arbitrary_types_allowed=True,  # This allows numpy arrays and other types which do not have built-in validation in Pydantic
 ):
@@ -407,9 +407,9 @@ class SimulationParameters(
         return hmor
 
 
-class Params(StrictFrozenModel):
+class SusiParams(StrictFrozenModel):
     params_schema_version: int = 1
-    simulation_parameters: SimulationParameters
+    extra_parameters: ExtraParameters
     canopy_parameters: CanopyParameters
     organic_layer_parameters: OrganicLayerParameters
     photo_parameters: PhotoParameters

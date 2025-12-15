@@ -10,7 +10,7 @@ from susi.io.app_structure import AppStructure
 app_structure = AppStructure()
 
 
-class MetaData(BaseModel):
+class SimulationMetaData(BaseModel):
     model_config = ConfigDict(
         validate_default=True,  # validate default values
     )

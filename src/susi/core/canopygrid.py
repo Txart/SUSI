@@ -21,7 +21,7 @@ import configparser
 
 import numpy as np
 
-from susi.io.parameter_model import CanopyParameters, CanopyStateParametersArray
+from susi.io.susi_parameter_model import CanopyParameters, CanopyStateParametersArray
 
 eps = np.finfo(float).eps
 

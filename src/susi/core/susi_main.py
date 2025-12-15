@@ -22,6 +22,7 @@ from susi.core.outputs import Outputs
 from susi.core.stand import Stand
 from susi.core.strip import StripHydrology, drain_depth_development
 from susi.core.susi_io import print_site_description
+from susi.io.simulation_configuration_model import SimulationParams
 from susi.core.susi_utils import (
     get_temp_sum,
     heterotrophic_respiration_yr,
@@ -29,7 +30,7 @@ from susi.core.susi_utils import (
     rew_drylimit,
 )
 from susi.core.temperature import PeatTemperature
-from susi.io.parameter_model import (
+from susi.io.susi_parameter_model import (
     CanopyStateParametersArray,
     OrganicLayerParametersArray,
 )
@@ -43,11 +44,7 @@ class Susi:
         self,
         forc,
         wpara,
-        cpara,
-        org_para,
-        spara,
-        outpara,
-        photopara,
+        simulation_params: SimulationParams,
         start_yr,
         end_yr,
         wlocation=None,
@@ -71,9 +68,17 @@ class Susi:
         print("           ")
         print("Initializing stand and site:")
 
+        spara = simulation_params.susi_params.extra_parameters
+        photopara = simulation_params.susi_params.photo_parameters
+        outpara = simulation_params.susi_params.output_parameters
+        cpara = simulation_params.susi_params.canopy_parameters
+        org_para = simulation_params.susi_params.organic_layer_parameters
+
         switches = {"Ojanen2010_2019": True}
 
-        dtc = cpara.dt  # canopy model timestep
+        dtc = (
+            simulation_params.susi_params.canopy_parameters.dt
+        )  # canopy model timestep
 
         start_date = datetime.datetime(start_yr, 1, 1)  # simulation start date
         end_date = datetime.datetime(end_yr, 12, 31)  # simulation end date
