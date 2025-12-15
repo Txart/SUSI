@@ -35,7 +35,7 @@ class ExecutionConfig(BaseModel):
         default=None,
         description="Random seed for deterministic random number generation in parameter sampling. Required if n_runs>1.",
     )
-    runs: list[SimulationParams] = Field(
+    simulation_parameter_list: list[SimulationParams] = Field(
         default=[],
         description="A list of parameters fully specifying each run. It must have 'n_runs' number of elements. E.g., if only runing 1 simulation, 'n_runs'=1, and the length of the 'runs' list must be 1.",
     )
@@ -59,7 +59,7 @@ class ExecutionConfig(BaseModel):
 
     def add_run(self, simulation_run: SimulationParams) -> None:
         """Add a simulation run"""
-        self.runs.append(simulation_run)
+        self.simulation_parameter_list.append(simulation_run)
 
         return None
 
@@ -70,7 +70,7 @@ class ExecutionConfig(BaseModel):
         """
         seen = set()
 
-        for simulation_run in self.runs:
+        for simulation_run in self.simulation_parameter_list:
             # Convert to JSON string for hashing (handles nested structures)
             serialized = json.dumps(
                 simulation_run.susi_params.model_dump(), sort_keys=True
@@ -80,3 +80,13 @@ class ExecutionConfig(BaseModel):
                 raise ValueError("Duplicate Susi Parameter models detected.")
             seen.add(serialized)
         return None
+
+    def check_number_of_runs(self) -> None:
+        if self.n_runs != len(self.simulation_parameter_list):
+            raise ValueError(
+                "The number of runs in the list 'runs' must be exactly 'n_runs'."
+            )
+
+    def validate_configuration(self) -> None:
+        self.check_number_of_runs()
+        self.check_for_duplicated_params()

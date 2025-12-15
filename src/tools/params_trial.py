@@ -21,9 +21,7 @@ from susi.io.susi_parameter_model import (
 # %% call
 
 simulation_config = ExecutionConfig(
-    n_runs=5,
-    random_seed=42,
-    n_parallel_processes=1,
+    n_runs=5, random_seed=42, n_parallel_processes=1, simulation_parameter_list=[]
 )
 
 rng = np.random.default_rng(seed=simulation_config.random_seed)
@@ -108,4 +106,5 @@ for i in range(simulation_config.n_runs):
             simulation_metadata=SimulationMetaData(),
         )
     )
-simulation_config.check_for_duplicated_params()
+
+simulation_config.validate_configuration()
