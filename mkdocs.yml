@@ -1,4 +1,8 @@
 site_name: SUSI Documentation
 site_url: https://txart.github.io/SUSI/
+
 theme:
   name: material
+
+plugins:
+- mkdocstrings
