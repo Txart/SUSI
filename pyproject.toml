@@ -26,6 +26,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "griffe-pydantic>=1.1.8",
     "ipython>=9.7.0",
     "mkdocs-material>=9.7.0",
     "mkdocstrings[python]>=1.0.0",

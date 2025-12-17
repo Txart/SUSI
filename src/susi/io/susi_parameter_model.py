@@ -51,6 +51,10 @@ class StrictFrozenModel(BaseModel):
 
 
 class OrganicLayerParameters(StrictFrozenModel):
+    """
+    Parameters for the organic layer
+    """
+
     org_depth: PositiveFloat = 0.04  # depth of organic top layer (m)
     org_poros: PositiveFloat = 0.9  # porosity (-)
     org_fc: PositiveFloat = 0.3  # field capacity (-)
@@ -84,6 +88,10 @@ class OrganicLayerParametersArray:
 
 
 class WeatherParameters(StrictFrozenModel):
+    """
+    Weather parameters
+    """
+
     infolder: DirectoryPath = get_project_root() / "\\wfiles\\"
     infile_d: FilePath = Path("Tammela_weather_1.csv")
     start_yr: int = 1980
@@ -94,6 +102,10 @@ class WeatherParameters(StrictFrozenModel):
 
 
 class CanopyStateParameters(StrictFrozenModel):
+    """
+    Canopy state parameters
+    """
+
     lai_conif: float = 3.0  # conifer 1-sided LAI (m2 m-2)
     lai_decid_max: float = 0.01  # maximum annual deciduous 1-sided LAI (m2 m-2):
     hc: float = 16.0  # canopy height (m)
@@ -104,6 +116,10 @@ class CanopyStateParameters(StrictFrozenModel):
 
 
 class CanopyStateParametersArray:
+    """
+    Same as CanopyStateParameters, but with all array elements
+    """
+
     lai_conif: np.ndarray
     lai_decid_max: np.ndarray
     hc: np.ndarray
@@ -120,26 +136,53 @@ class CanopyStateParametersArray:
 
 
 class CanopyParameters(BaseModel):
+    """
+    Canopy parameters
+    """
+
     dt: float = 86400.0  # canopy model timestep
+    """canopy model timestep (s)"""
 
     class Flow(StrictFrozenModel):
+        """
+        Flow field parameters
+        """
+
         # Flow field
         zmeas: float = 2.0
         zground: float = 0.5
         zo_ground: float = 0.01
 
     class Interception(StrictFrozenModel):
+        """
+        Interception parameters
+        """
+
         # interception
         wmax: float = 0.5
         wmaxsnow: float = 4.0
 
     class Snow(StrictFrozenModel):
+        """
+        Snow parameters
+        """
+
         # degree-day snow model
-        kmelt: float = 2.8934e-05  # melt coefficient in open (mm/s
-        kfreeze: float = 5.79e-6  # freezing coefficient (mm/s)
-        r: float = 0.05  # maximum fraction of liquid in snow (-)
+        kmelt: float = Field(
+            default=2.8934e-05, description="melt coefficient in open (mm/s)"
+        )
+        kfreeze: float = Field(
+            default=5.79e-6, description="freezing coefficient (mm/s)"
+        )
+        r: float = Field(
+            default=0.05, description="maximum fraction of liquid in snow (-)"
+        )
 
     class Physpara(BaseModel):
+        """
+        Physpara parameters
+        """
+
         # canopy conductance
         amax: float = Field(
             frozen=False, default=10.0
@@ -154,6 +197,10 @@ class CanopyParameters(BaseModel):
         gsoil: float = 1e-2  # soil surface conductance if soil is fully wet (m/s)
 
     class Phenology(StrictFrozenModel):
+        """
+        Phenology parameters
+        """
+
         # seasonal cycle of physiology: smax [degC], tau[d], xo[degC],fmin[-](residual photocapasity)
         smax: float = 18.5  # degC
         tau: float = 13.0  # days
@@ -169,6 +216,10 @@ class CanopyParameters(BaseModel):
 
 
 class OutputParameters(StrictFrozenModel):
+    """
+    Output file IO parameters
+    """
+
     outfolder: DirectoryPath = get_project_root() / Path("outputs/")
     netcdf: Path = Path("susi.nc")
     startday: int = 1
@@ -178,7 +229,10 @@ class OutputParameters(StrictFrozenModel):
 
 
 class PhotoParameters(StrictFrozenModel):
-    # photosynthesis parameters for assimilation model (Mäkelä et al. 2008)
+    """
+    Photosynthesis parameters for assimilation model (Mäkelä et al. 2008)
+    """
+
     beta: float
     gamma: float
     kappa: float
@@ -190,6 +244,10 @@ class PhotoParameters(StrictFrozenModel):
 
 
 class LocationsForPhotoParams(str, Enum):
+    """
+    Gives all options for the location of the photosynthesis parameters
+    """
+
     all_data = "All_data"
     sodankyla = "Sodankyla"
     hyytiala = "Hyytiala"
@@ -269,12 +327,20 @@ def get_photo_parameters_by_location(
 
 
 class TreeSpecies(str, Enum):
+    """
+    Possible tree species options
+    """
+
     pine = "Pine"
     spruce = "Spruce"
     birch = "Birch"
 
 
 class PeatTypes(str, Enum):
+    """
+    Possible choices for peat types
+    """
+
     all_types = "A"
     sphagnum = "S"
     carex = "C"
@@ -282,6 +348,10 @@ class PeatTypes(str, Enum):
 
 
 class NutrientFertilizationParameters(StrictFrozenModel):
+    """
+    Nutrient fertilization parameters
+    """
+
     dose: NonNegativeFloat = Field(
         description="Dose of compound in fertilizer, kg ha-1"
     )
@@ -290,6 +360,10 @@ class NutrientFertilizationParameters(StrictFrozenModel):
 
 
 class FertilizationParameters(StrictFrozenModel):
+    """
+    Canopy parameters
+    """
+
     application_year: int = 2201
     N: NutrientFertilizationParameters
     P: NutrientFertilizationParameters
@@ -298,6 +372,14 @@ class FertilizationParameters(StrictFrozenModel):
 
 
 class TemperatureSolverEnum(str, Enum):
+    """
+    Options for the type of soil temperature solver.
+
+    Tested with a 90 x 90 matrix (the usual size)
+    - "dense_banded" is 3x faster than "sparse"
+    - "dense_banded" is 4x faster than "dense"
+    """
+
     sparse = "sparse"
     dense = "dense"
     dense_banded = "dense_banded"
@@ -307,6 +389,10 @@ class ExtraParameters(
     StrictFrozenModel,
     arbitrary_types_allowed=True,  # This allows numpy arrays and other types which do not have built-in validation in Pydantic
 ):
+    """
+    Simulation parameters
+    """
+
     # Temporal parameter to test sparse and dense temperature solvers
     temperature_solve_mode: TemperatureSolverEnum
 
@@ -417,6 +503,10 @@ class ExtraParameters(
 
 
 class SusiParams(StrictFrozenModel):
+    """
+    Global parameters. This is the one to be instantiated.
+    """
+
     params_schema_version: int = 1
     extra_parameters: ExtraParameters
     canopy_parameters: CanopyParameters

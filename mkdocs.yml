@@ -1,8 +1,25 @@
 site_name: SUSI Documentation
 site_url: https://txart.github.io/SUSI/
+docs_dir: docs
+
+nav:
+  - SUSI: index.md
+  - Input parameters: input_parameters.md
 
 theme:
   name: material
+  palette:
+    primary: purple
+  features:
+  - navigation.instant
+  - navigation.tabs
+
 
 plugins:
-- mkdocstrings
+- mkdocstrings:
+    handlers:
+      python:
+        options:
+          extensions:
+          - griffe_pydantic:
+              schema: true
