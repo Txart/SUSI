@@ -10,6 +10,7 @@ from susi.io.susi_parameter_model import (
     SusiParams,
     ExtraParameters,
     TreeSpecies,
+    TemperatureSolverEnum,
     get_photo_parameters_by_location,
     h_mor_from_drainage_and_mass_mor_Pitkanen,
 )
@@ -22,6 +23,7 @@ PARAMETERS = SusiParams(
     ),
     output_parameters=OutputParameters(),
     extra_parameters=ExtraParameters(
+        temperature_solve_mode=TemperatureSolverEnum("dense_banded"),
         start_date=datetime.datetime(2004, 1, 1),
         end_date=datetime.datetime(2020, 12, 31),
         L=40.0,

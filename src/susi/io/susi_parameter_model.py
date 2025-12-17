@@ -297,10 +297,19 @@ class FertilizationParameters(StrictFrozenModel):
     pH_increment: NonNegativeFloat = 1.0
 
 
+class TemperatureSolverEnum(str, Enum):
+    sparse = "sparse"
+    dense = "dense"
+    dense_banded = "dense_banded"
+
+
 class ExtraParameters(
     StrictFrozenModel,
     arbitrary_types_allowed=True,  # This allows numpy arrays and other types which do not have built-in validation in Pydantic
 ):
+    # Temporal parameter to test sparse and dense temperature solvers
+    temperature_solve_mode: TemperatureSolverEnum
+
     # Time
     start_date: datetime.datetime  # Start date for simulation
     end_date: datetime.datetime  # End day for simulation

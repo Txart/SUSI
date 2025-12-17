@@ -368,7 +368,10 @@ class Susi:
                     stpout = stp.update_outarrays(r, d, stpout)
 
                     z, peat_temperature = pt.run_timestep(
-                        ta, np.mean(SWE), np.mean(efloor)
+                        ta,
+                        np.mean(SWE),
+                        np.mean(efloor),
+                        solution_mode=spara.temperature_solve_mode,
                     )  # peat temperature in different depths
                     peat_temperatures[r, d, :] = peat_temperature
 
